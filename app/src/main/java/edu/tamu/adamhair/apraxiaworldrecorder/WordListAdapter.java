@@ -1,6 +1,9 @@
 package edu.tamu.adamhair.apraxiaworldrecorder;
 
 import android.content.Context;
+import android.content.Intent;
+import android.support.v4.content.res.ResourcesCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,18 +44,62 @@ public class WordListAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        View rowView = layoutInflater.inflate(R.layout.word_list_layout, parent, false);
+    public View getView(final int position, View convertView, ViewGroup parent) {
+        ViewHolder holder;
 
-        TextView titleTextView = (TextView) rowView.findViewById(R.id.word_list_title);
-        TextView incorrectTextView = (TextView) rowView.findViewById(R.id.word_list_incorrect);
-        TextView correctTextView = (TextView) rowView.findViewById(R.id.word_list_correct);
-        ImageView thumbnailImageView = (ImageView) rowView.findViewById(R.id.word_list_thumbnail);
+        if (convertView == null) {
+            convertView = layoutInflater.inflate(R.layout.word_list_layout, parent, false);
 
-        titleTextView.setText((String) getItem(position));
+            holder = new ViewHolder();
+
+            holder.titleTextView = (TextView) convertView.findViewById(R.id.word_list_title);
+            holder.incorrectTextView = (TextView) convertView.findViewById(R.id.word_list_incorrect);
+            holder.correctTextView = (TextView) convertView.findViewById(R.id.word_list_correct);
+            holder.thumbnailImageView = (ImageView) convertView.findViewById(R.id.word_list_thumbnail);
+
+            convertView.setTag(holder);
+        } else {
+            holder = (ViewHolder) convertView.getTag();
+        }
+
+        TextView titleTextView = holder.titleTextView;
+        TextView correctTextView = holder.correctTextView;
+        TextView incorrectTextView = holder.incorrectTextView;
+        ImageView thumbnailImageView = holder.thumbnailImageView;
+
+        String title = (String) getItem(position);
+        title = title.substring(0,1).toUpperCase() + title.substring(1);
+        titleTextView.setText(title);
         incorrectTextView.setText("Incorrect: #");
         correctTextView.setText("Correct: #");
+        int imageId;
+        // Reserved Java keywords
+        if (title.equals("Break") || title.equals("Case") || title.equals("Switch")) {
+            imageId = mContext.getResources().getIdentifier("edu.tamu.adamhair.apraxiaworldrecorder:drawable/" + title.toLowerCase() + "_ndp3", null, null);
+        } else {
+            imageId = mContext.getResources().getIdentifier("edu.tamu.adamhair.apraxiaworldrecorder:drawable/" + title.toLowerCase(), null, null);
+        }
 
-        return rowView;
+        thumbnailImageView.setImageResource(imageId);
+
+        convertView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {switchToWordRecorderActivity(position);}
+        });
+
+        return convertView;
+    }
+
+    private static class ViewHolder {
+        public TextView titleTextView;
+        public TextView correctTextView;
+        public TextView incorrectTextView;
+        public ImageView thumbnailImageView;
+    }
+
+    private void switchToWordRecorderActivity(int position) {
+        Intent intent = new Intent(mContext, WordRecorderActivity.class);
+        intent.putExtra("title", (String) getItem(position));
+        mContext.startActivity(intent);
     }
 }

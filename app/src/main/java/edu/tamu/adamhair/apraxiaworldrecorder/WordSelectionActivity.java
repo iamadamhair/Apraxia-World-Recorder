@@ -18,7 +18,9 @@ public class WordSelectionActivity extends AppCompatActivity {
         setContentView(R.layout.activity_word_selection);
         wordList = findViewById(R.id.wordsListView);
 
-        String[] words = {"Elephant", "Helicopter", "Arm", "Bear"};
+
+
+        String[] words = getResources().getStringArray(R.array.ndp3_images);
         ArrayList<String> wordArrayList = new ArrayList<String>();
         for (int i = 0; i < words.length; i++) {
             wordArrayList.add(words[i]);
