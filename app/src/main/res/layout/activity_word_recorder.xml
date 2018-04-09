@@ -4,6 +4,124 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="edu.tamu.adamhair.apraxiaworldrecorder.WordRecorderActivity">
+    tools:context="edu.tamu.adamhair.apraxiaworldrecorder.WordSelectionActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="0.25">
+
+            <ImageView
+                android:id="@+id/repetitionThumbnailImageView"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:layout_marginBottom="6dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginLeft="4dp"
+                android:layout_marginTop="6dp"
+                android:scaleType="centerInside"
+                tools:src="@mipmap/ic_launcher"
+                android:contentDescription="@string/thumbnail"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_toRightOf="@id/repetitionThumbnailImageView"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/repetitionTitleTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:text="Title"
+                    android:textSize="18sp"
+                    android:layout_weight="0.5"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:weightSum="2"
+                    android:orientation="horizontal"
+                    android:layout_weight="0.25">
+
+                    <TextView
+                        android:id="@+id/repetitionCorrectTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+                        android:layout_marginRight="8dp"
+                        android:layout_marginTop="2dp"
+                        android:layout_weight="1"
+                        android:textAlignment="center"
+                        android:textSize="16sp"
+                        tools:text="Correct" />
+
+                    <TextView
+                        android:id="@+id/repetitionIncorrectTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+                        android:layout_marginRight="8dp"
+                        android:layout_marginTop="2dp"
+                        android:layout_weight="1"
+                        android:textAlignment="center"
+                        android:textSize="16sp"
+                        tools:text="Incorrect"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:weightSum="2"
+                    android:orientation="horizontal"
+                    android:layout_weight="0.25">
+
+                    <TextView
+                        android:id="@+id/repetitionCorrectInfoTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+                        android:layout_marginRight="8dp"
+                        android:layout_marginTop="2dp"
+                        android:layout_weight="1"
+                        android:textAlignment="center"
+                        android:textSize="16sp"
+                        tools:text="Correct info" />
+
+                    <TextView
+                        android:id="@+id/repetitionIncorrectInfoTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+                        android:layout_marginRight="8dp"
+                        android:layout_marginTop="2dp"
+                        android:layout_weight="1"
+                        android:textAlignment="center"
+                        android:textSize="16sp"
+                        tools:text="Incorrect info"/>
+                </LinearLayout>
+            </LinearLayout>
+
+
+
+            <View style="@style/Divider" android:layout_alignParentBottom="true"/>
+        </RelativeLayout>
+
+        <ListView
+            android:id="@+id/repetitionListView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.75"/>
+    </LinearLayout>
+
 
 </android.support.constraint.ConstraintLayout>

@@ -2,7 +2,6 @@ package edu.tamu.adamhair.apraxiaworldrecorder;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.v4.content.res.ResourcesCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by adamhair on 4/7/2018.
@@ -21,12 +21,30 @@ public class WordListAdapter extends BaseAdapter {
     private Context mContext;
     private LayoutInflater layoutInflater;
     private ArrayList<String> dataSource;
+    private HashMap<String, Integer> imageResources;
 
     public WordListAdapter(Context context, ArrayList<String> items) {
         mContext = context;
         dataSource = items;
+        configureImageResources(items);
         layoutInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
+
+    private void configureImageResources(ArrayList<String> items) {
+        imageResources = new HashMap<String, Integer>();
+        for (int i = 0; i < items.size(); i++) {
+            String name = items.get(i);
+            int imageId;
+            if (name.equals("break") || name.equals("case") || name.equals("switch")) {
+                imageId = mContext.getResources().getIdentifier("edu.tamu.adamhair.apraxiaworldrecorder:drawable/" + name + "_ndp3", null, null);
+            } else {
+                imageId = mContext.getResources().getIdentifier("edu.tamu.adamhair.apraxiaworldrecorder:drawable/" + name, null, null);
+            }
+            imageResources.put(name, imageId);
+        }
+    }
+
+    public int getImageId(int position) {return imageResources.get((String) getItem(position)); }
 
     @Override
     public int getCount() {
@@ -72,15 +90,8 @@ public class WordListAdapter extends BaseAdapter {
         titleTextView.setText(title);
         incorrectTextView.setText("Incorrect: #");
         correctTextView.setText("Correct: #");
-        int imageId;
-        // Reserved Java keywords
-        if (title.equals("Break") || title.equals("Case") || title.equals("Switch")) {
-            imageId = mContext.getResources().getIdentifier("edu.tamu.adamhair.apraxiaworldrecorder:drawable/" + title.toLowerCase() + "_ndp3", null, null);
-        } else {
-            imageId = mContext.getResources().getIdentifier("edu.tamu.adamhair.apraxiaworldrecorder:drawable/" + title.toLowerCase(), null, null);
-        }
 
-        thumbnailImageView.setImageResource(imageId);
+        thumbnailImageView.setImageResource(getImageId(position));
 
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -100,6 +111,7 @@ public class WordListAdapter extends BaseAdapter {
     private void switchToWordRecorderActivity(int position) {
         Intent intent = new Intent(mContext, WordRecorderActivity.class);
         intent.putExtra("title", (String) getItem(position));
+        intent.putExtra("imageId", getImageId(position));
         mContext.startActivity(intent);
     }
 }

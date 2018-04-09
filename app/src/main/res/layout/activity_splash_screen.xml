@@ -6,48 +6,77 @@
     android:layout_height="match_parent"
     tools:context="edu.tamu.adamhair.apraxiaworldrecorder.SplashScreen">
 
-    <Spinner
-        android:id="@+id/profileSpinner"
-        android:layout_width="350dp"
-        android:layout_height="32dp"
-        android:layout_marginTop="104dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/instructionsTextView"
-        android:layout_width="152dp"
-        android:layout_height="26dp"
-        android:clickable="true"
-        android:text="Instructions"
-        android:textAlignment="center"
-        android:textColor="@color/colorAccent"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/createProfileButton"
-        app:layout_constraintVertical_bias="0.782" />
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            app:srcCompat="@drawable/awlogo"
+            android:layout_weight="0.25"
+            android:layout_marginTop="8dp"/>
 
-    <Button
-        android:id="@+id/enterButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="96dp"
-        android:text="Enter"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/profileSpinner"
-        app:layout_constraintVertical_chainStyle="spread" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.75">
 
-    <Button
-        android:id="@+id/createProfileButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="68dp"
-        android:text="Create new profile"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/enterButton" />
+
+            <TextView
+                android:id="@+id/selectProfileTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="16dp"
+                android:text="Select Apraxia World Profile"/>
+
+            <Spinner
+                android:id="@+id/profileSpinner"
+                android:layout_width="349dp"
+                android:layout_height="32dp"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/selectProfileTextView"
+                android:layout_marginTop="8dp"/>
+
+            <Button
+                android:id="@+id/enterButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="Enter"
+                android:layout_below="@id/profileSpinner"
+                android:layout_centerHorizontal="true"/>
+
+            <Button
+                android:id="@+id/createProfileButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:text="Create new profile"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/enterButton" />
+
+            <TextView
+                android:id="@+id/instructionsTextView"
+                android:layout_width="152dp"
+                android:layout_height="26dp"
+                android:clickable="true"
+                android:text="Instructions"
+                android:textAlignment="center"
+                android:textColor="@color/colorAccent"
+                android:textSize="18sp"
+                android:layout_marginBottom="16dp"
+                android:layout_centerHorizontal="true"
+                android:layout_alignParentBottom="true" />
+        </RelativeLayout>
+
+    </LinearLayout>
+
+
+
+
 </android.support.constraint.ConstraintLayout>

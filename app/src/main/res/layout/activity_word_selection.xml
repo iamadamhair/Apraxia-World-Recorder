@@ -6,8 +6,44 @@
     android:layout_height="match_parent"
     tools:context="edu.tamu.adamhair.apraxiaworldrecorder.WordSelectionActivity">
 
-    <ListView
-        android:id="@+id/wordsListView"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="0.15">
+
+            <TextView
+                android:id="@+id/wordSelectionUsernameTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:layout_marginTop="16dp"
+                android:layout_marginLeft="16dp"
+                android:text="Username"/>
+
+            <TextView
+                android:id="@+id/wordsCompletedTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginLeft="16dp"
+                android:textSize="16sp"
+                android:text="Completed words: #"
+                android:layout_below="@id/wordSelectionUsernameTextView"/>
+
+            <View style="@style/Divider" android:layout_alignParentBottom="true"/>
+        </RelativeLayout>
+
+        <ListView
+            android:id="@+id/wordsListView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.85"/>
+    </LinearLayout>
+
+
 </android.support.constraint.ConstraintLayout>
