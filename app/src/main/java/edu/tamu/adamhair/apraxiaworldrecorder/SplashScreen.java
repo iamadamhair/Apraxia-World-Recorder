@@ -47,6 +47,9 @@ public class SplashScreen extends AppCompatActivity {
             public void onClick(View view) {switchToWordSelectionActivity(view);}
         });
 
+        appDatabase = AppDatabase.getAppDatabase(this);
+
+
         /* Setup spinner and adapter */
         List<String> usernames = new ArrayList<String>();
         usernames.add("");
