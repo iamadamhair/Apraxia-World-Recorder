@@ -1,4 +1,4 @@
-package edu.tamu.adamhair.apraxiaworldrecorder;
+package edu.tamu.adamhair.apraxiaworldrecorder.database;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
@@ -10,7 +10,7 @@ import android.arch.persistence.room.PrimaryKey;
 
 @Entity
 public class Repetition {
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     private int repetition_id;
 
     @ColumnInfo(name = "user_id")
@@ -19,11 +19,22 @@ public class Repetition {
     @ColumnInfo(name = "word_id")
     private int wordId;
 
+    @ColumnInfo(name = "word_name")
+    private String wordName;
+
     @ColumnInfo(name = "num_correct")
     private int numCorrect;
 
     @ColumnInfo(name = "num_incorrect")
     private int numIncorrect;
+
+    public Repetition(int userId, String wordName, int wordId, int numCorrect, int numIncorrect) {
+        this.userId = userId;
+        this.wordId = wordId;
+        this.wordName = wordName;
+        this.numCorrect = numCorrect;
+        this.numIncorrect = numIncorrect;
+    }
 
     public int getRepetition_id() {
         return repetition_id;
@@ -39,6 +50,14 @@ public class Repetition {
 
     public void setUserId(int userId) {
         this.userId = userId;
+    }
+
+    public String getWordName() {
+        return wordName;
+    }
+
+    public void setWordName(String wordName) {
+        this.wordName = wordName;
     }
 
     public int getWordId() {

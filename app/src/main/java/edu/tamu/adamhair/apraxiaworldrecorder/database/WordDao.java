@@ -1,9 +1,11 @@
-package edu.tamu.adamhair.apraxiaworldrecorder;
+package edu.tamu.adamhair.apraxiaworldrecorder.database;
 
+import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
+import android.arch.persistence.room.Update;
 
 import java.util.List;
 
@@ -14,14 +16,17 @@ import java.util.List;
 @Dao
 public interface WordDao {
     @Query("SELECT * FROM word")
-    List<Word> getAll();
+    LiveData<List<Word>> getAll();
 
-    @Query("SELECT * FROM word WHERE word_name LIKE :word")
-    Word findByWord(String word);
+    @Query("SELECT word_id FROM word WHERE word_name LIKE :word")
+    int findIdByWord(String word);
 
     @Insert
     void insertAll(Word... words);
 
     @Delete
     void delete(Word word);
+
+    @Update
+    void update(Word... words);
 }

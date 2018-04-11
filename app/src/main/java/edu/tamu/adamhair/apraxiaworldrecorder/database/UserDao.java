@@ -1,9 +1,11 @@
-package edu.tamu.adamhair.apraxiaworldrecorder;
+package edu.tamu.adamhair.apraxiaworldrecorder.database;
 
+import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
+import android.arch.persistence.room.Update;
 
 import java.util.List;
 
@@ -14,7 +16,10 @@ import java.util.List;
 @Dao
 public interface UserDao {
     @Query("SELECT * FROM user")
-    List<User> getAll();
+    LiveData<List<User>> getAll();
+
+    @Query("SELECT username FROM user")
+    LiveData<List<String>> getAllUsernames();
 
     @Query("SELECT * FROM user WHERE username LIKE :username")
     User findByUsername(String username);
@@ -24,4 +29,7 @@ public interface UserDao {
 
     @Delete
     void delete(User user);
+
+    @Update
+    void update(User... users);
 }

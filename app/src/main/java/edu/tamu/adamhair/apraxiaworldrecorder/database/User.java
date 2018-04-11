@@ -1,4 +1,4 @@
-package edu.tamu.adamhair.apraxiaworldrecorder;
+package edu.tamu.adamhair.apraxiaworldrecorder.database;
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
@@ -9,7 +9,7 @@ import android.arch.persistence.room.PrimaryKey;
 
 @Entity
 public class User {
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     private int uid;
 
     @ColumnInfo(name = "username")
@@ -17,6 +17,11 @@ public class User {
 
     @ColumnInfo(name = "age")
     private int age;
+
+    public User(String username, int age) {
+        this.username = username;
+        this.age = age;
+    }
 
     public void setUid(int uid) {
         this.uid = uid;

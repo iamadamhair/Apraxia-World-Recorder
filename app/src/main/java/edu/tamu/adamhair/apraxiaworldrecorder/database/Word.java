@@ -1,4 +1,4 @@
-package edu.tamu.adamhair.apraxiaworldrecorder;
+package edu.tamu.adamhair.apraxiaworldrecorder.database;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
@@ -10,11 +10,15 @@ import android.arch.persistence.room.PrimaryKey;
 
 @Entity
 public class Word {
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     private int word_id;
 
     @ColumnInfo(name = "word_name")
     private String wordName;
+
+    public Word(String wordName) {
+        this.wordName = wordName;
+    }
 
     public int getWord_id() {
         return word_id;

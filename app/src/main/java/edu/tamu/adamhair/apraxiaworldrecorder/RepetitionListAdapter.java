@@ -84,6 +84,8 @@ public class RepetitionListAdapter extends BaseAdapter {
         return convertView;
     }
 
+
+
     private static class RepetitionViewHolder {
         public TextView countTextView;
         public CheckBox correctCheckBox;

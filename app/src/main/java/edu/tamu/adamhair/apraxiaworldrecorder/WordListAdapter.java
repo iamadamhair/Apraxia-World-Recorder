@@ -1,7 +1,10 @@
 package edu.tamu.adamhair.apraxiaworldrecorder;
 
+import android.app.Application;
+import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +15,11 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
+import edu.tamu.adamhair.apraxiaworldrecorder.database.Repetition;
+import edu.tamu.adamhair.apraxiaworldrecorder.database.Word;
+import edu.tamu.adamhair.apraxiaworldrecorder.viewmodels.WordViewModel;
 
 /**
  * Created by adamhair on 4/7/2018.
@@ -20,20 +28,21 @@ import java.util.HashMap;
 public class WordListAdapter extends BaseAdapter {
     private Context mContext;
     private LayoutInflater layoutInflater;
-    private ArrayList<String> dataSource;
+    private ArrayList<Repetition> dataSource;
     private HashMap<String, Integer> imageResources;
 
-    public WordListAdapter(Context context, ArrayList<String> items) {
+
+    public WordListAdapter(Context context, ArrayList<Repetition> items) {
         mContext = context;
         dataSource = items;
         configureImageResources(items);
         layoutInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
-    private void configureImageResources(ArrayList<String> items) {
+    private void configureImageResources(ArrayList<Repetition> items) {
         imageResources = new HashMap<String, Integer>();
         for (int i = 0; i < items.size(); i++) {
-            String name = items.get(i);
+            String name = items.get(i).getWordName();
             int imageId;
             if (name.equals("break") || name.equals("case") || name.equals("switch")) {
                 imageId = mContext.getResources().getIdentifier("edu.tamu.adamhair.apraxiaworldrecorder:drawable/" + name + "_ndp3", null, null);
@@ -44,7 +53,7 @@ public class WordListAdapter extends BaseAdapter {
         }
     }
 
-    public int getImageId(int position) {return imageResources.get((String) getItem(position)); }
+    public int getImageId(int position) {return imageResources.get(getItem(position).getWordName()); }
 
     @Override
     public int getCount() {
@@ -52,7 +61,7 @@ public class WordListAdapter extends BaseAdapter {
     }
 
     @Override
-    public Object getItem(int position) {
+    public Repetition getItem(int position) {
         return dataSource.get(position);
     }
 
@@ -85,11 +94,14 @@ public class WordListAdapter extends BaseAdapter {
         TextView incorrectTextView = holder.incorrectTextView;
         ImageView thumbnailImageView = holder.thumbnailImageView;
 
-        String title = (String) getItem(position);
+        String title = getItem(position).getWordName();
         title = title.substring(0,1).toUpperCase() + title.substring(1);
         titleTextView.setText(title);
-        incorrectTextView.setText("Incorrect: #");
-        correctTextView.setText("Correct: #");
+
+
+        incorrectTextView.setText("Incorrect: " +
+                String.valueOf(getItem(position).getNumIncorrect()));
+        correctTextView.setText("Correct: " + String.valueOf(getItem(position).getNumCorrect()));
 
         thumbnailImageView.setImageResource(getImageId(position));
 
@@ -101,16 +113,27 @@ public class WordListAdapter extends BaseAdapter {
         return convertView;
     }
 
+    public void addItems(List<Repetition> repetitions) {
+        Log.d("WordListAdapter", String.valueOf(repetitions.size()));
+//        for (int i = 0; i < repetitions.size(); i++) {
+//            Log.d("WordListAdapter", String.valueOf(repetitions.get(i).getNumCorrect()));
+//        }
+        this.dataSource = new ArrayList(repetitions);
+        configureImageResources(this.dataSource);
+        notifyDataSetChanged();
+    }
+
     private static class ViewHolder {
         public TextView titleTextView;
         public TextView correctTextView;
         public TextView incorrectTextView;
         public ImageView thumbnailImageView;
+        public Word Word;
     }
 
     private void switchToWordRecorderActivity(int position) {
         Intent intent = new Intent(mContext, WordRecorderActivity.class);
-        intent.putExtra("title", (String) getItem(position));
+        intent.putExtra("title", getItem(position).getWordName());
         intent.putExtra("imageId", getImageId(position));
         mContext.startActivity(intent);
     }

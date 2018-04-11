@@ -1,4 +1,4 @@
-package edu.tamu.adamhair.apraxiaworldrecorder;
+package edu.tamu.adamhair.apraxiaworldrecorder.database;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
@@ -10,7 +10,7 @@ import android.arch.persistence.room.PrimaryKey;
 
 @Entity
 public class Recording {
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     private int recording_id;
 
     @ColumnInfo(name = "user_id")
@@ -27,6 +27,14 @@ public class Recording {
 
     @ColumnInfo(name = "repetition_number")
     private int repetitionNumber;
+
+    public Recording(int userId, String fileLocation, int wordId, boolean isCorrect, int repetitionNumber) {
+        this.userId = userId;
+        this.fileLocation = fileLocation;
+        this.wordId = wordId;
+        this.isCorrect = isCorrect;
+        this.repetitionNumber = repetitionNumber;
+    }
 
     public int getRecording_id() {
         return recording_id;
