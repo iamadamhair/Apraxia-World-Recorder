@@ -98,6 +98,7 @@ public class WordListAdapter extends BaseAdapter {
         title = title.substring(0,1).toUpperCase() + title.substring(1);
         titleTextView.setText(title);
 
+        Log.d("Word List", title);
 
         incorrectTextView.setText("Incorrect: " +
                 String.valueOf(getItem(position).getNumIncorrect()));
@@ -133,6 +134,7 @@ public class WordListAdapter extends BaseAdapter {
         intent.putExtra("imageId", getImageId(position));
         intent.putExtra("userId", getItem(position).getUserId());
         intent.putExtra("wordId", getItem(position).getWordId());
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mContext.startActivity(intent);
     }
 }

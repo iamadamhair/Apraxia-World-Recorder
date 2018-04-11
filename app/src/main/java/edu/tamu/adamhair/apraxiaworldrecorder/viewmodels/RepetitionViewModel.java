@@ -108,6 +108,7 @@ public class RepetitionViewModel extends AndroidViewModel {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             intent.putExtra("userId", this.userId);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             application.startActivity(intent);
         }
     }}
