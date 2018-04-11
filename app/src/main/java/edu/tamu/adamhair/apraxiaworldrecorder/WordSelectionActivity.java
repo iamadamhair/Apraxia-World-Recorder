@@ -36,14 +36,8 @@ public class WordSelectionActivity extends AppCompatActivity {
         wordSelectionUsername = findViewById(R.id.wordSelectionUsernameTextView);
 
         ArrayList<Repetition> repetitions = new ArrayList<>();
-//        String[] words = getResources().getStringArray(R.array.ndp3_images);
-//        ArrayList<String> wordArrayList = new ArrayList<String>();
-//        for (int i = 0; i < words.length; i++) {
-//            wordArrayList.add(words[i]);
-//        }
 
         final WordListAdapter wordListAdapter = new WordListAdapter(getApplication(), repetitions);
-//        ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, words);
         wordList.setAdapter(wordListAdapter);
 
         Intent intent = getIntent();

@@ -138,12 +138,11 @@ public class ProfileCreatorActivity extends AppCompatActivity {
     private void switchToWordSelectionActivity(View view) {
         User newUser = new User(usernameEditText.getText().toString(),
                 Integer.valueOf(ageEditText.getText().toString()));
-//        userViewModel.addUser(newUser);
-//        newUserSetup(newUser);
-
         Intent intent = new Intent(this, WordSelectionActivity.class);
         intent.putExtra("username", usernameEditText.getText().toString());
-//        startActivity(intent);
+
+        createButton.setClickable(false);
+        infoTextView.setText("Preparing new profile");
         newUserSetup(newUser, intent);
     }
 

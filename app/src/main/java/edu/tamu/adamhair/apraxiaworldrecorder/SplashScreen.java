@@ -115,7 +115,7 @@ public class SplashScreen extends AppCompatActivity {
     private void switchToWordSelectionActivity(View view) {
         Intent intent = new Intent(this, WordSelectionActivity.class);
         intent.putExtra("username", userSpinner.getSelectedItem().toString());
-        intent.putExtra("userId", userSpinner.getSelectedItemPosition());
+        intent.putExtra("userId", userIds.get(userSpinner.getSelectedItemPosition()-1));
         startActivity(intent);
     }
 }

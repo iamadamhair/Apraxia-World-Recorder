@@ -31,6 +31,8 @@ public abstract class AppDatabase extends RoomDatabase {
                         @Override
                         public void onCreate(@NonNull SupportSQLiteDatabase db) {
                             super.onCreate(db);
+
+                            // Populate the database with the word list
                             Executors.newSingleThreadScheduledExecutor().execute(new Runnable() {
                                 @Override
                                 public void run() {
@@ -40,7 +42,6 @@ public abstract class AppDatabase extends RoomDatabase {
                         }
             }).build();
         }
-        Log.d("Database", "Database instance returned");
         return INSTANCE;
     }
 

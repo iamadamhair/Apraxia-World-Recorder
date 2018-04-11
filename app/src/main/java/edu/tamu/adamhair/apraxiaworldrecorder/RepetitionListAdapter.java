@@ -16,6 +16,9 @@ import org.w3c.dom.Text;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import edu.tamu.adamhair.apraxiaworldrecorder.database.Recording;
+import edu.tamu.adamhair.apraxiaworldrecorder.database.Repetition;
+
 /**
  * Created by adamhair on 4/9/2018.
  */
@@ -23,9 +26,9 @@ import java.util.HashMap;
 public class RepetitionListAdapter extends BaseAdapter {
     private Context mContext;
     private LayoutInflater layoutInflater;
-    private ArrayList<String> dataSource;
+    private ArrayList<Recording> dataSource;
 
-    public RepetitionListAdapter(Context context, ArrayList<String> items) {
+    public RepetitionListAdapter(Context context, ArrayList<Recording> items) {
         mContext = context;
         dataSource = items;
         layoutInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -37,7 +40,7 @@ public class RepetitionListAdapter extends BaseAdapter {
     }
 
     @Override
-    public Object getItem(int position) {
+    public Recording getItem(int position) {
         return dataSource.get(position);
     }
 
@@ -66,8 +69,12 @@ public class RepetitionListAdapter extends BaseAdapter {
             holder = (RepetitionViewHolder) convertView.getTag();
         }
 
+        Button playButton = holder.playButton;
+        playButton.setEnabled(false);
+        playButton.setBackgroundTintList(mContext.getResources().getColorStateList(android.R.color.darker_gray));
+
         TextView countTextView = holder.countTextView;
-        countTextView.setText((String) getItem(position));
+        countTextView.setText("Rep " + String.valueOf(getItem(position).getRepetitionNumber()));
 
 //        TextView titleTextView = holder.titleTextView;
 //        TextView correctTextView = holder.correctTextView;
@@ -84,6 +91,11 @@ public class RepetitionListAdapter extends BaseAdapter {
         return convertView;
     }
 
+
+    public void addItems(ArrayList<Recording> recordings) {
+        this.dataSource = recordings;
+        notifyDataSetChanged();
+    }
 
 
     private static class RepetitionViewHolder {

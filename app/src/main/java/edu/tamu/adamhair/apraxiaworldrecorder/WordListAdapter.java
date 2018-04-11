@@ -114,10 +114,6 @@ public class WordListAdapter extends BaseAdapter {
     }
 
     public void addItems(List<Repetition> repetitions) {
-        Log.d("WordListAdapter", String.valueOf(repetitions.size()));
-//        for (int i = 0; i < repetitions.size(); i++) {
-//            Log.d("WordListAdapter", String.valueOf(repetitions.get(i).getNumCorrect()));
-//        }
         this.dataSource = new ArrayList(repetitions);
         configureImageResources(this.dataSource);
         notifyDataSetChanged();
@@ -135,6 +131,8 @@ public class WordListAdapter extends BaseAdapter {
         Intent intent = new Intent(mContext, WordRecorderActivity.class);
         intent.putExtra("title", getItem(position).getWordName());
         intent.putExtra("imageId", getImageId(position));
+        intent.putExtra("userId", getItem(position).getUserId());
+        intent.putExtra("wordId", getItem(position).getWordId());
         mContext.startActivity(intent);
     }
 }
