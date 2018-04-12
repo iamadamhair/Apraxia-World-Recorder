@@ -12,6 +12,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import edu.tamu.adamhair.apraxiaworldrecorder.database.Repetition;
@@ -21,6 +22,7 @@ public class WordSelectionActivity extends AppCompatActivity {
 
     RepetitionViewModel repetitionViewModel;
     int userId;
+    String username;
 
     /* UI elements */
     ListView wordList;
@@ -35,29 +37,31 @@ public class WordSelectionActivity extends AppCompatActivity {
         wordList = findViewById(R.id.wordsListView);
         wordSelectionUsername = findViewById(R.id.wordSelectionUsernameTextView);
 
-        ArrayList<Repetition> repetitions = new ArrayList<>();
+        Intent intent = getIntent();
+        username = intent.getStringExtra("username");
+        wordSelectionUsername.setText(username);
+        userId = intent.getIntExtra("userId", 0);
 
+        /* Set up ListView with empty ArrayList until LiveData fills it in */
+        ArrayList<Repetition> repetitions = new ArrayList<>();
         final WordListAdapter wordListAdapter = new WordListAdapter(getApplication(), repetitions);
         wordList.setAdapter(wordListAdapter);
-
-        Intent intent = getIntent();
-        wordSelectionUsername.setText(intent.getStringExtra("username"));
-        userId = intent.getIntExtra("userId", 0);
+        wordListAdapter.setUsername(username);
 
         /* Set up LiveData */
         repetitionViewModel =  ViewModelProviders.of(this).get(RepetitionViewModel.class);
 
-        repetitionViewModel.getRepetitionsByUserId(userId).observe(WordSelectionActivity.this, new Observer<List<Repetition>>() {
+        repetitionViewModel.getRepetitionsByUserIdSorted(userId).observe(WordSelectionActivity.this, new Observer<List<Repetition>>() {
             @Override
             public void onChanged(@Nullable List<Repetition> repetitions) {
-                if (repetitions.size() > 0) {
-                    wordListAdapter.addItems(repetitions);
-                } else {
-                    Log.e("WordSelectionActivity", "Repetition list empty");
-                }
-
+                wordListAdapter.addItems(repetitions);
             }
         });
+
+        /* Set up user folder, if necessary */
+        if (!FileManager.userFolderExists(username)) {
+            FileManager.createUserFolder(username);
+        }
     }
 
     @Override

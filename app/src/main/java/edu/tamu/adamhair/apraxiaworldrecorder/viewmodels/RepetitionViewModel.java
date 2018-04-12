@@ -22,7 +22,7 @@ public class RepetitionViewModel extends AndroidViewModel {
     private AppDatabase appDatabase;
     private LiveData<List<Repetition>> repetitions;
 
-    public RepetitionViewModel(Application application){
+    public RepetitionViewModel(Application application ){
         super(application);
 
         appDatabase = AppDatabase.getAppDatabase(this.getApplication());
@@ -37,8 +37,39 @@ public class RepetitionViewModel extends AndroidViewModel {
         return appDatabase.repetitionDao().findByUserId(userId);
     }
 
+    public LiveData<List<Repetition>> getRepetitionsByUserIdSorted(int userId) {
+        return appDatabase.repetitionDao().findByUserIdSorted(userId);
+    }
+
     public void populateRepetitions(final String[] words, User user, Intent intent, Application application) {
         new addAsyncTask(appDatabase, user, intent, application).execute(words);
+    }
+
+    public void updateWordLabelCounts(int wordId, int userId, int correct, int incorrect) {
+        Integer[] params = new Integer[4];
+        params[0] = userId;
+        params[1] = wordId;
+        params[2] = correct;
+        params[3] = incorrect;
+        new updateCountsAsyncTask(appDatabase).execute(params);
+    }
+
+    private static class updateCountsAsyncTask extends AsyncTask<Integer, Void, Void> {
+        AppDatabase appDatabase;
+
+        updateCountsAsyncTask(AppDatabase db) {
+            appDatabase = db;
+        }
+
+        @Override
+        protected Void doInBackground(Integer... integers) {
+            Repetition repetition = appDatabase.repetitionDao().findRepetitionByUserIdAndWordId(integers[0], integers[1]);
+            repetition.setNumCorrect(integers[2]);
+            repetition.setNumIncorrect(integers[3]);
+            appDatabase.repetitionDao().update(repetition);
+
+            return null;
+        }
     }
 
     private static class addAsyncTask extends AsyncTask<String, Void, Void> {
@@ -85,19 +116,16 @@ public class RepetitionViewModel extends AndroidViewModel {
             for (int i = 0; i < numWords; i++) {
                 repetitions[i] = new Repetition(user.getUid(), params[wordIndices[i]], db.wordDao().findIdByWord(params[wordIndices[i]]), 0, 0);
             }
-            Log.d("Repetition", "Repetitions ok");
 
             Recording[] recordings = new Recording[numWords*numReps];
             int idx = 0;
             for (int i = 0; i < numWords; i++) {
                 for (int j = 0; j < numReps; j++) {
                     recordings[idx] = new Recording(user.getUid(), null, db.wordDao().findIdByWord(params[wordIndices[i]]),
-                            true, j+1);
+                            false, j+1);
                     idx++;
                 }
             }
-            Log.d("Recording", "Recordings ok");
-
 
             db.repetitionDao().insertAll(repetitions);
             db.recordingDao().insertAll(recordings);
@@ -111,4 +139,5 @@ public class RepetitionViewModel extends AndroidViewModel {
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             application.startActivity(intent);
         }
-    }}
+    }
+}

@@ -2,7 +2,9 @@ package edu.tamu.adamhair.apraxiaworldrecorder;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -130,6 +132,8 @@ public class ProfileCreatorActivity extends AppCompatActivity {
 
     private void newUserSetup(User user, Intent intent) {
         // Puts the user in the db and populates the repetitions
+        usernames.add(user.getUsername());
+        new writeUserDatAsync(this).execute(usernames);
         repetitionViewModel.populateRepetitions(this.getResources().getStringArray(R.array.ndp3_images),
                 user, intent, getApplication());
 
@@ -170,6 +174,19 @@ public class ProfileCreatorActivity extends AppCompatActivity {
             return true;
         } else {
             return false;
+        }
+    }
+    private class writeUserDatAsync extends AsyncTask<List<String>, Void, Void> {
+        Context mContext;
+
+        writeUserDatAsync(Context context) {
+            mContext = context;
+        }
+
+        @Override
+        protected Void doInBackground(final List<String>... params) {
+            FileManager.recreateUserDatFile(usernames, mContext);
+            return null;
         }
     }
 

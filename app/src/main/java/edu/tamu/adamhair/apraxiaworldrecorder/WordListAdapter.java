@@ -3,7 +3,6 @@ package edu.tamu.adamhair.apraxiaworldrecorder;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,7 +17,6 @@ import java.util.List;
 
 import edu.tamu.adamhair.apraxiaworldrecorder.database.Repetition;
 import edu.tamu.adamhair.apraxiaworldrecorder.database.Word;
-import edu.tamu.adamhair.apraxiaworldrecorder.viewmodels.WordViewModel;
 
 /**
  * Created by adamhair on 4/7/2018.
@@ -29,6 +27,7 @@ public class WordListAdapter extends BaseAdapter {
     private LayoutInflater layoutInflater;
     private ArrayList<Repetition> dataSource;
     private HashMap<String, Integer> imageResources;
+    private String username;
 
 
     public WordListAdapter(Context context, ArrayList<Repetition> items) {
@@ -114,6 +113,10 @@ public class WordListAdapter extends BaseAdapter {
         return convertView;
     }
 
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public void addItems(List<Repetition> repetitions) {
         this.dataSource = new ArrayList(repetitions);
         configureImageResources(this.dataSource);
@@ -134,6 +137,7 @@ public class WordListAdapter extends BaseAdapter {
         intent.putExtra("imageId", getImageId(position));
         intent.putExtra("userId", getItem(position).getUserId());
         intent.putExtra("wordId", getItem(position).getWordId());
+        intent.putExtra("username", username);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mContext.startActivity(intent);
     }

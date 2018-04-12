@@ -15,15 +15,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.tamu.adamhair.apraxiaworldrecorder.database.Recording;
+import edu.tamu.adamhair.apraxiaworldrecorder.database.RepetitionDao;
 import edu.tamu.adamhair.apraxiaworldrecorder.viewmodels.RecordingViewModel;
+import edu.tamu.adamhair.apraxiaworldrecorder.viewmodels.RepetitionViewModel;
 
 public class WordRecorderActivity extends AppCompatActivity {
 
     private ArrayList<Recording> recordings;
     private RecordingViewModel recordingViewModel;
+    private RepetitionViewModel repetitionViewModel;
 
     private int userId;
     private int wordId;
+    private String username;
+    private String word;
 
     /* UI elements */
     TextView titleTextView;
@@ -48,23 +53,23 @@ public class WordRecorderActivity extends AppCompatActivity {
         thumbnailImageView = (ImageView) findViewById(R.id.repetitionThumbnailImageView);
         repetitionListView = (ListView) findViewById(R.id.repetitionListView);
 
+        /* Get values from the intent */
         Intent intent = getIntent();
-        String title = intent.getStringExtra("title");
+        word = intent.getStringExtra("title");
+        username = intent.getStringExtra("username");
         int imageId = intent.getIntExtra("imageId",0);
         userId = intent.getIntExtra("userId", 0);
         wordId = intent.getIntExtra("wordId", 0);
 
-        titleTextView.setText(title.substring(0,1).toUpperCase() + title.substring(1));
+        titleTextView.setText(word.substring(0,1).toUpperCase() + word.substring(1));
         thumbnailImageView.setImageResource(imageId);
 
+        /* Set up listview with empty arraylist that will be filled later by livedata */
         recordings = new ArrayList<>();
-//        ArrayList<String> repetitionTitles = new ArrayList<>();
-//        for (int i = 1; i < 11; i++) {
-//            repetitionTitles.add("Rep " + String.valueOf(i));
-//        }
-
-        final RepetitionListAdapter repetitionListAdapter = new RepetitionListAdapter(this, recordings);
+        final RepetitionListAdapter repetitionListAdapter = new RepetitionListAdapter(this, recordings, correctTextView, incorrectTextView);
         repetitionListView.setAdapter(repetitionListAdapter);
+        repetitionListAdapter.setUsername(username);
+        repetitionListAdapter.setWord(word);
 
         correctTextView.setText("Correct: #");
         incorrectTextView.setText("Incorrect: #");
@@ -77,11 +82,20 @@ public class WordRecorderActivity extends AppCompatActivity {
 
         /* Set up LiveData */
         recordingViewModel = ViewModelProviders.of(this).get(RecordingViewModel.class);
+        repetitionListAdapter.setRecordingViewModel(recordingViewModel);
         recordingViewModel.getRecordingsOfUserAndWord(userId, wordId).observe(WordRecorderActivity.this, new Observer<List<Recording>>() {
             @Override
             public void onChanged(@Nullable List<Recording> recordings) {
                 repetitionListAdapter.addItems(new ArrayList(recordings));
             }
         });
+        repetitionViewModel = ViewModelProviders.of(this).get(RepetitionViewModel.class);
+        repetitionListAdapter.setRepetitionViewModel(repetitionViewModel);
+
+        /* Create word folder, if necessary */
+        if (!FileManager.wordFolderExists(username, word)) {
+            FileManager.createWordFolder(username, word);
+            Log.d("Word Recorder", "Making word folder");
+        }
     }
 }

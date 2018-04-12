@@ -21,8 +21,14 @@ public interface RepetitionDao {
     @Query("SELECT * FROM repetition WHERE user_id LIKE :userId AND word_id LIKE :wordId")
     LiveData<List<Repetition>> findByUserIdAndWordId(int userId, int wordId);
 
+    @Query("SELECT * FROM repetition WHERE user_id LIKE :userId AND word_id LIKE :wordId")
+    Repetition findRepetitionByUserIdAndWordId(int userId, int wordId);
+
     @Query("SELECT * FROM repetition WHERE user_id LIKE :userId")
     LiveData<List<Repetition>> findByUserId(int userId);
+
+    @Query("SELECT * FROM repetition WHERE user_id LIKE :userId ORDER BY word_name ASC")
+    LiveData<List<Repetition>> findByUserIdSorted(int userId);
 
     @Insert
     void insertAll(Repetition... repetitions);

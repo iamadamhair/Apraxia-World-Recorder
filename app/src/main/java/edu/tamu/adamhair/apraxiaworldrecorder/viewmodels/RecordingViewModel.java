@@ -36,6 +36,10 @@ public class RecordingViewModel extends AndroidViewModel{
         return appDatabase.recordingDao().findByUserIdAndWordId(userId, wordId);
     }
 
+    public void updateRecordings(Recording... recordings) {
+        new updateAsyncTask(appDatabase).execute(recordings);
+    }
+
 //    public LiveData<List<Recording>> getRecordingsOrPopulate(int userId, int wordId) {
 //        return
 //    }
@@ -66,7 +70,17 @@ public class RecordingViewModel extends AndroidViewModel{
             db.recordingDao().insertAll(recordings);
             return null;
         }
+    }
 
+    public static class updateAsyncTask extends AsyncTask<Recording, Void, Void> {
+        private AppDatabase db;
 
+        updateAsyncTask(AppDatabase db) {this.db = db;}
+
+        @Override
+        protected Void doInBackground(final Recording... recordings) {
+            db.recordingDao().update(recordings);
+            return null;
+        }
     }
 }
