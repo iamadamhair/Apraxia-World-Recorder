@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="edu.tamu.adamhair.apraxiaworldrecorder.WordSelectionActivity">
+    tools:context="edu.tamu.adamhair.apraxiaworldrecorder.WordRecorderActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -28,7 +28,7 @@
                 android:layout_marginLeft="4dp"
                 android:layout_marginTop="6dp"
                 android:scaleType="centerInside"
-                tools:src="@mipmap/ic_launcher"
+                android:src="@mipmap/ic_launcher"
                 android:contentDescription="@string/thumbnail"/>
 
             <LinearLayout
@@ -95,7 +95,7 @@
                         android:layout_weight="1"
                         android:textAlignment="center"
                         android:textSize="16sp"
-                        tools:text="Correct info" />
+                        android:text="Correct info" />
 
                     <TextView
                         android:id="@+id/repetitionIncorrectInfoTextView"
@@ -107,11 +107,9 @@
                         android:layout_weight="1"
                         android:textAlignment="center"
                         android:textSize="16sp"
-                        tools:text="Incorrect info"/>
+                        android:text="Incorrect info"/>
                 </LinearLayout>
             </LinearLayout>
-
-
 
             <View style="@style/Divider" android:layout_alignParentBottom="true"/>
         </RelativeLayout>

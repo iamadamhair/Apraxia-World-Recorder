@@ -1,7 +1,6 @@
 package edu.tamu.adamhair.apraxiaworldrecorder;
 
 import android.app.Application;
-import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.Nullable;
@@ -97,12 +96,13 @@ public class WordListAdapter extends BaseAdapter {
         String title = getItem(position).getWordName();
         title = title.substring(0,1).toUpperCase() + title.substring(1);
         titleTextView.setText(title);
-
-        Log.d("Word List", title);
+        titleTextView.setTextColor(R.attr.titleTextColor);
 
         incorrectTextView.setText("Incorrect: " +
                 String.valueOf(getItem(position).getNumIncorrect()));
         correctTextView.setText("Correct: " + String.valueOf(getItem(position).getNumCorrect()));
+        incorrectTextView.setTextColor(R.attr.titleTextColor);
+        correctTextView.setTextColor(R.attr.titleTextColor);
 
         thumbnailImageView.setImageResource(getImageId(position));
 
