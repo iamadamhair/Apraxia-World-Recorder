@@ -18,11 +18,17 @@ public interface UserDao {
     @Query("SELECT * FROM user")
     LiveData<List<User>> getAll();
 
+    @Query("SELECT * FROM user ORDER BY username ASC")
+    LiveData<List<User>> getAllSorted();
+
     @Query("SELECT username FROM user")
     LiveData<List<String>> getAllUsernames();
 
     @Query("SELECT * FROM user WHERE username LIKE :username")
     User findByUsername(String username);
+
+    @Query("SELECT username FROM user ORDER BY username ASC")
+    LiveData<List<String>> getAllUsernamesSorted();
 
     @Insert
     void insertAll(User... users);

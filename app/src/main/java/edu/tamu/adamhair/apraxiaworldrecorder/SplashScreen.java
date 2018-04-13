@@ -83,7 +83,7 @@ public class SplashScreen extends AppCompatActivity {
         /* Setup LiveData for usernames */
         userViewModel = ViewModelProviders.of(this).get(UserViewModel.class);
 
-        userViewModel.getAllUsers().observe(SplashScreen.this, new Observer<List<User>>() {
+        userViewModel.getAllUsersSorted().observe(SplashScreen.this, new Observer<List<User>>() {
             @Override
             public void onChanged(@Nullable List<User> users) {
                 for (int i = 0; i < users.size(); i++) {
@@ -119,5 +119,14 @@ public class SplashScreen extends AppCompatActivity {
         intent.putExtra("username", userSpinner.getSelectedItem().toString());
         intent.putExtra("userId", userIds.get(userSpinner.getSelectedItemPosition()-1));
         startActivity(intent);
+    }
+
+    @Override
+    public void onBackPressed() {
+        // Go to phone home, don't go back to another activity
+        Intent a = new Intent(Intent.ACTION_MAIN);
+        a.addCategory(Intent.CATEGORY_HOME);
+        a.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(a);
     }
 }

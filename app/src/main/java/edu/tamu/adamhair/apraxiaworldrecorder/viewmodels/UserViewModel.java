@@ -30,9 +30,13 @@ public class UserViewModel extends AndroidViewModel {
 
     public LiveData<List<User>> getAllUsers() {return allUsers; }
 
+    public LiveData<List<User>> getAllUsersSorted() { return appDatabase.userDao().getAllSorted(); }
+
     public LiveData<List<String>> getUsernames() {
         return usernames;
     }
+
+    public LiveData<List<String>> getUsernamesSorted() { return appDatabase.userDao().getAllUsernamesSorted(); }
 
     private static class addAsyncTask extends AsyncTask<User, Void, Void> {
         private AppDatabase db;

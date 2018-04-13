@@ -123,6 +123,7 @@ public class RepetitionViewModel extends AndroidViewModel {
                 for (int j = 0; j < numReps; j++) {
                     recordings[idx] = new Recording(user.getUid(), null, db.wordDao().findIdByWord(params[wordIndices[i]]),
                             false, j+1);
+                    Log.d("Repetition", String.valueOf(j+1));
                     idx++;
                 }
             }

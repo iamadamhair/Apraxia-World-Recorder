@@ -11,29 +11,97 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_weight="0.15">
 
-            <TextView
-                android:id="@+id/wordSelectionUsernameTextView"
-                android:layout_width="match_parent"
+            <RelativeLayout
+                android:id="@+id/infoLayout"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="18sp"
-                android:layout_marginTop="16dp"
-                android:layout_marginLeft="16dp"
-                android:text="Username"/>
+                android:layout_centerVertical="true"
+                android:layout_alignParentLeft="true"
+                android:layout_marginLeft="16dp">
 
-            <TextView
-                android:id="@+id/wordsCompletedTextView"
-                android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/wordSelectionUsernameTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:text="Username"/>
+
+                <TextView
+                    android:id="@+id/wordsCompletedTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:layout_marginTop="8dp"
+                    android:text="Completed words: #"
+                    android:layout_below="@id/wordSelectionUsernameTextView"/>
+            </RelativeLayout>
+
+
+
+            <RelativeLayout
+                android:layout_width="100dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginLeft="16dp"
-                android:textSize="16sp"
-                android:text="Completed words: #"
-                android:layout_below="@id/wordSelectionUsernameTextView"/>
+                android:layout_marginRight="16dp"
+                android:layout_alignParentRight="true">
+
+                <TextView
+                    android:id="@+id/exportTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Export audio"
+                    android:textAlignment="center"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="8dp"
+                    android:textSize="14sp"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_below="@id/exportTextView"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <RelativeLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.5">
+
+                        <ImageButton
+                            android:id="@+id/cloudUploadImageButton"
+                            android:layout_width="45dp"
+                            android:layout_height="45dp"
+                            android:src="@drawable/cloud_upload"
+                            android:scaleType="fitCenter"
+                            android:layout_centerVertical="true"
+                            android:layout_alignParentRight="true"
+                            android:layout_marginRight="8dp"/>
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.5">
+
+                        <ImageButton
+                            android:id="@+id/gameExportImageButton"
+                            android:layout_width="45dp"
+                            android:layout_height="45dp"
+                            android:src="@drawable/game_controller"
+                            android:scaleType="fitCenter"
+                            android:layout_centerVertical="true"
+                            android:layout_alignParentLeft="true"
+                            android:layout_marginLeft="8dp"/>
+                    </RelativeLayout>
+
+                </LinearLayout>
+
+            </RelativeLayout>
 
             <View style="@style/Divider" android:layout_alignParentBottom="true"/>
         </RelativeLayout>
