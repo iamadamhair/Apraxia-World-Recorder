@@ -3,7 +3,9 @@ package edu.tamu.adamhair.apraxiaworldrecorder;
 import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
+import android.media.MediaRecorder;
 import android.media.MediaScannerConnection;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -37,6 +39,9 @@ public class RepetitionListAdapter extends BaseAdapter {
     private Context mContext;
     private LayoutInflater layoutInflater;
     private ArrayList<Recording> dataSource;
+    private ArrayList<WavRecorder> wavRecorders;
+    private ArrayList<MediaRecorder> mediaRecorders;
+    private ArrayList<String> recordingPaths;
     private String username;
     private boolean recording;
     private int recordingRep = -1;
@@ -69,6 +74,11 @@ public class RepetitionListAdapter extends BaseAdapter {
 
         this.correctTextView.setText("Correct: " + String.valueOf(correctCount));
         this.incorrectTextView.setText("Incorrect: " + String.valueOf(incorrectCount));
+
+        // Initialize empty lists to be filled in when the new data comes
+        recordingPaths = new ArrayList<>();
+        wavRecorders = new ArrayList<>();
+        mediaRecorders = new ArrayList<>();
     }
 
     @Override
@@ -101,14 +111,12 @@ public class RepetitionListAdapter extends BaseAdapter {
             holder.radioGroup = (RadioGroup) convertView.findViewById(R.id.recordingLabelRadioGroup);
             holder.recordButton = (Button) convertView.findViewById(R.id.repetitionRecordButton);
             holder.playButton = (Button) convertView.findViewById(R.id.repetitionPlayButton);
-            holder.recordingPath = recordingPrefix + "/Calibration/" + word + "/" + word +
-                    "_" + String.valueOf(getItem(position).getRepetitionNumber()) + ".wav";
-            holder.wavRecorder = new WavRecorder(holder.recordingPath);
 
             convertView.setTag(holder);
         } else {
             holder = (RepetitionViewHolder) convertView.getTag();
         }
+
 
         TextView countTextView = holder.countTextView;
         countTextView.setText("Rep " + String.valueOf(getItem(position).getRepetitionNumber()));
@@ -172,7 +180,14 @@ public class RepetitionListAdapter extends BaseAdapter {
                         recording = true;
                         recordingRep = position;
 
-                        holder.wavRecorder.startRecording();
+//                        wavRecorders.get(position).startRecording();
+                        try {
+                            mediaRecorders.get(position).prepare();
+                            mediaRecorders.get(position).start();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Log.e("Media Recorder", "Unable to prepare and start media recorder");
+                        }
 
                     } else {
                         recordButton.setText("Rec");
@@ -180,7 +195,9 @@ public class RepetitionListAdapter extends BaseAdapter {
                         recordingRep = -1;
 
                         // Stop recording and notify the file system to scan the new file for USB access
-                        holder.wavRecorder.stopRecording();
+//                        wavRecorders.get(position).stopRecording();
+                        mediaRecorders.get(position).stop();
+                        mediaRecorders.get(position).release();
                         if (getItem(position).getFileLocation() == null) {
                             if (getItem(position).isCorrect()) {
                                 correctCount++;
@@ -189,10 +206,10 @@ public class RepetitionListAdapter extends BaseAdapter {
                             }
                             repetitionViewModel.updateWordLabelCounts(getItem(position).getWordId(), getItem(position).getUserId(), correctCount, incorrectCount);
                         }
-                        getItem(position).setFileLocation(holder.recordingPath);
+                        getItem(position).setFileLocation(recordingPaths.get(position));
                         recordingViewModel.updateRecordings(getItem(position));
                         Log.d("Recording", getItem(position).getFileLocation());
-                        MediaScannerConnection.scanFile(mContext, new String[] {holder.recordingPath}, null, null);
+                        MediaScannerConnection.scanFile(mContext, new String[] {recordingPaths.get(position)}, null, null);
                         playButton.setEnabled(true);
                         playButton.setBackgroundTintList(mContext.getResources().getColorStateList(android.R.color.holo_green_light));
                     }
@@ -208,7 +225,7 @@ public class RepetitionListAdapter extends BaseAdapter {
                 if (recordingRep == -1) {
                     try {
                         MediaPlayer mp = new MediaPlayer();
-                        mp.setDataSource(holder.recordingPath);
+                        mp.setDataSource(recordingPaths.get(position));
                         mp.prepare();
                         mp.start();
                     } catch (IOException e) {
@@ -251,6 +268,10 @@ public class RepetitionListAdapter extends BaseAdapter {
             } else if (!dataSource.get(i).isCorrect() && dataSource.get(i).getFileLocation() != null) {
                 incorrectCount++;
             }
+            recordingPaths.add(recordingPrefix + "/Calibration/" + word + "/" + word +
+                    "_" + String.valueOf(getItem(i).getRepetitionNumber()) + ".mp4");
+//            wavRecorders.add(new WavRecorder(recordingPaths.get(i)));
+            mediaRecorders.add(configureMediaRecorder(recordingPaths.get(i)));
         }
 
         correctTextView.setText("Correct: " + String.valueOf(correctCount));
@@ -265,8 +286,20 @@ public class RepetitionListAdapter extends BaseAdapter {
         public RadioGroup radioGroup;
         public Button recordButton;
         public Button playButton;
-        public WavRecorder wavRecorder;
-        public String recordingPath;
+    }
+
+    private MediaRecorder configureMediaRecorder(String path) {
+        int fs = 16000;
+        int bitDepth = 16;
+
+        MediaRecorder mediaRecorder = new MediaRecorder();
+        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        mediaRecorder.setAudioEncodingBitRate(bitDepth * fs);
+        mediaRecorder.setAudioSamplingRate(fs);
+        mediaRecorder.setOutputFile(path);
+        return mediaRecorder;
     }
 
 }

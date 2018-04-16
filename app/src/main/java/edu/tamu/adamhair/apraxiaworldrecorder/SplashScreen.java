@@ -96,12 +96,6 @@ public class SplashScreen extends AppCompatActivity {
 
         /* Get file system permissions */
         FileManager.checkAndRequestPermissions(this);
-
-        /* Make Apraxia World folder, if necessary */
-        if (!FileManager.awFolderExists()) {
-            Log.d("Splash screen", "Making AW folder");
-            FileManager.createAwFolder();
-        }
     }
 
     private void switchToInstructionActivity(View view) {
@@ -110,15 +104,26 @@ public class SplashScreen extends AppCompatActivity {
     }
 
     private void switchToCreateProfileActivity(View view) {
-        Intent intent = new Intent(this, ProfileCreatorActivity.class);
-        startActivity(intent);
+        if (FileManager.checkAndRequestPermissions(this)) {
+            /* Make Apraxia World folder, if necessary */
+            if (!FileManager.awFolderExists()) {
+                Log.d("Splash screen", "Making AW folder");
+                FileManager.createAwFolder();
+            }
+
+            Intent intent = new Intent(this, ProfileCreatorActivity.class);
+            startActivity(intent);
+        }
     }
 
     private void switchToWordSelectionActivity(View view) {
-        Intent intent = new Intent(this, WordSelectionActivity.class);
-        intent.putExtra("username", userSpinner.getSelectedItem().toString());
-        intent.putExtra("userId", userIds.get(userSpinner.getSelectedItemPosition()-1));
-        startActivity(intent);
+        if (FileManager.checkAndRequestPermissions(this)) {
+            Intent intent = new Intent(this, WordSelectionActivity.class);
+            intent.putExtra("username", userSpinner.getSelectedItem().toString());
+            intent.putExtra("userId", userIds.get(userSpinner.getSelectedItemPosition()-1));
+            startActivity(intent);
+        }
+
     }
 
     @Override

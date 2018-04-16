@@ -14,6 +14,10 @@ import android.media.MediaRecorder;
 import android.os.Environment;
 import android.util.Log;
 
+/*
+From http://selvaline.blogspot.com/2016/04/record-audio-wav-format-android-how-to.html
+ */
+
 public class WavRecorder {
     private static final int RECORDER_BPP = 16;
     private static final String AUDIO_RECORDER_FOLDER = "AudioRecorder";
