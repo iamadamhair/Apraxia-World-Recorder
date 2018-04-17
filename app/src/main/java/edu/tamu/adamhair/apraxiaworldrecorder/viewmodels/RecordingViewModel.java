@@ -36,6 +36,8 @@ public class RecordingViewModel extends AndroidViewModel{
         return appDatabase.recordingDao().findByUserIdAndWordId(userId, wordId);
     }
 
+    public List<Recording> getRecordingsListByUserId(int userId) {return appDatabase.recordingDao().findListByUserId(userId);}
+
     public void updateRecordings(Recording... recordings) {
         new updateAsyncTask(appDatabase).execute(recordings);
     }

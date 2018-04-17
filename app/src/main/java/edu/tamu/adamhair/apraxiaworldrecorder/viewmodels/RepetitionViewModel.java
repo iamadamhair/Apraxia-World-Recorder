@@ -45,6 +45,8 @@ public class RepetitionViewModel extends AndroidViewModel {
         new addAsyncTask(appDatabase, user, intent, application).execute(words);
     }
 
+    public List<Repetition> getRepetitionsListByUser(int userId) {return appDatabase.repetitionDao().getAllOfAUserList(userId);}
+
     public void updateWordLabelCounts(int wordId, int userId, int correct, int incorrect) {
         Integer[] params = new Integer[4];
         params[0] = userId;

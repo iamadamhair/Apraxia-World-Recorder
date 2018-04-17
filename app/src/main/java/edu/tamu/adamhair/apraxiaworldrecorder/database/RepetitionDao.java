@@ -18,6 +18,9 @@ public interface RepetitionDao {
     @Query("SELECT * FROM repetition")
     LiveData<List<Repetition>> getAll();
 
+    @Query("SELECT * FROM repetition WHERE user_id LIKE :userId")
+    List<Repetition> getAllOfAUserList(int userId);
+
     @Query("SELECT * FROM repetition WHERE user_id LIKE :userId AND word_id LIKE :wordId")
     LiveData<List<Repetition>> findByUserIdAndWordId(int userId, int wordId);
 

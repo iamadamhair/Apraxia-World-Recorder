@@ -21,6 +21,12 @@ public interface WordDao {
     @Query("SELECT word_id FROM word WHERE word_name LIKE :word")
     int findIdByWord(String word);
 
+    @Query("SELECT word_name FROM word WHERE word_id LIKE :wordId")
+    String findWordById(int wordId);
+
+    @Query("SELECT * FROM word")
+    List<Word> getAllList();
+
     @Insert
     void insertAll(Word... words);
 

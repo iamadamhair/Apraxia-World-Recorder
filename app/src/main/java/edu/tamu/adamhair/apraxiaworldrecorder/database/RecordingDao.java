@@ -21,6 +21,9 @@ public interface RecordingDao {
     @Query("SELECT * FROM recording WHERE user_id LIKE :userId")
     LiveData<List<Recording>> findByUserId(int userId);
 
+    @Query("SELECT * FROM recording WHERE user_id LIKE :userId")
+    List<Recording> findListByUserId(int userId);
+
     @Query("SELECT * FROM recording WHERE user_id LIKE :userId AND word_id LIKE :wordId")
     LiveData<List<Recording>> findByUserIdAndWordId(int userId, int wordId);
 

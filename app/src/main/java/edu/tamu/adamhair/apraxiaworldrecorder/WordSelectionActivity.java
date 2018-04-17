@@ -38,12 +38,18 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import edu.tamu.adamhair.apraxiaworldrecorder.database.Recording;
 import edu.tamu.adamhair.apraxiaworldrecorder.database.Repetition;
+import edu.tamu.adamhair.apraxiaworldrecorder.database.Word;
+import edu.tamu.adamhair.apraxiaworldrecorder.viewmodels.RecordingViewModel;
 import edu.tamu.adamhair.apraxiaworldrecorder.viewmodels.RepetitionViewModel;
+import edu.tamu.adamhair.apraxiaworldrecorder.viewmodels.WordViewModel;
 
 public class WordSelectionActivity extends AppCompatActivity {
 
     RepetitionViewModel repetitionViewModel;
+    RecordingViewModel recordingViewModel;
+    WordViewModel wordViewModel;
     int userId;
     String username;
     int wordsCompleted;
@@ -86,6 +92,8 @@ public class WordSelectionActivity extends AppCompatActivity {
 
         /* Set up LiveData */
         repetitionViewModel =  ViewModelProviders.of(this).get(RepetitionViewModel.class);
+        recordingViewModel = ViewModelProviders.of(this).get(RecordingViewModel.class);
+        wordViewModel = ViewModelProviders.of(this).get(WordViewModel.class);
 
         repetitionViewModel.getRepetitionsByUserIdSorted(userId).observe(WordSelectionActivity.this, new Observer<List<Repetition>>() {
             @Override
@@ -129,7 +137,7 @@ public class WordSelectionActivity extends AppCompatActivity {
                     String params[] = new String[2];
                     params[0] = FileManager.getUserFolderString(username);
                     params[1] = Environment.getExternalStorageDirectory().toString() + "/" + username + ".zip";
-                    new zipAsyncTask(WordSelectionActivity.this, storageReference).execute(params);
+                    new zipAsyncTask(WordSelectionActivity.this, storageReference, recordingViewModel, wordViewModel, userId, username).execute(params);
                 }
             }
         });
@@ -150,15 +158,31 @@ public class WordSelectionActivity extends AppCompatActivity {
         private Context mContext;
         private String destinationPath;
         private StorageReference storageReference;
+        private RecordingViewModel recordingViewModel;
+        private WordViewModel wordViewModel;
+        private int userId;
+        private String username;
 
-        zipAsyncTask(Context context, StorageReference reference) {
+        zipAsyncTask(Context context, StorageReference reference, RecordingViewModel recordingViewModel,
+                     WordViewModel wordViewModel, int userId, String username) {
             mContext = context;
             storageReference = reference;
+            this.recordingViewModel = recordingViewModel;
+            this.userId = userId;
+            this.username = username;
+            this.wordViewModel = wordViewModel;
         }
 
 
         @Override
         protected Void doInBackground(final String... params) {
+            // Get Repetitions to write label file
+            List<Recording> recordings = recordingViewModel.getRecordingsListByUserId(userId);
+            List<Word> words = wordViewModel.getAllWords();
+
+            FileManager.recreateRepetitionDatFile(recordings, username, mContext);
+            FileManager.recreateWordsDatFile(words, username, mContext);
+
             // Param 0 is source, param 1 is destination
             destinationPath = params[1];
             zipFileAtPath(params[0], params[1]);
@@ -171,7 +195,7 @@ public class WordSelectionActivity extends AppCompatActivity {
             Log.d("Zipper", "Files zipped and attempting to upload");
             // Upload zip to Firebase upon zip completion
             Uri file = Uri.fromFile(new File(destinationPath));
-            StorageReference zipRef = storageReference.child(destinationPath.substring(destinationPath.lastIndexOf("/")));
+            StorageReference zipRef = storageReference.child(username + String.valueOf(System.currentTimeMillis() / 1000) + ".zip");
 
             zipRef.putFile(file)
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {

@@ -5,6 +5,8 @@ import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.os.AsyncTask;
 
+import java.util.List;
+
 import edu.tamu.adamhair.apraxiaworldrecorder.database.AppDatabase;
 import edu.tamu.adamhair.apraxiaworldrecorder.database.Word;
 
@@ -17,5 +19,11 @@ public class WordViewModel extends AndroidViewModel {
 
         appDatabase = AppDatabase.getAppDatabase(this.getApplication());
     }
+
+    public String getWordById(int wordId) {
+        return appDatabase.wordDao().findWordById(wordId);
+    }
+
+    public List<Word> getAllWords() { return appDatabase.wordDao().getAllList(); }
 
 }

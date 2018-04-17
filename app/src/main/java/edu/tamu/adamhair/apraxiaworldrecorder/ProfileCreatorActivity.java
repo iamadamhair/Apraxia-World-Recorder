@@ -129,14 +129,12 @@ public class ProfileCreatorActivity extends AppCompatActivity {
         });
     }
 
-
     private void newUserSetup(User user, Intent intent) {
         // Puts the user in the db and populates the repetitions
         usernames.add(user.getUsername());
         new writeUserDatAsync(this).execute(usernames);
         repetitionViewModel.populateRepetitions(this.getResources().getStringArray(R.array.ndp3_images),
                 user, intent, getApplication());
-
     }
 
     private void switchToWordSelectionActivity(View view) {
