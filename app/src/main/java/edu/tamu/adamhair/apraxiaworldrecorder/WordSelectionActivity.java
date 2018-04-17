@@ -5,8 +5,10 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -18,8 +20,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -124,7 +129,7 @@ public class WordSelectionActivity extends AppCompatActivity {
                     String params[] = new String[2];
                     params[0] = FileManager.getUserFolderString(username);
                     params[1] = Environment.getExternalStorageDirectory().toString() + "/" + username + ".zip";
-                    new zipAsyncTask(WordSelectionActivity.this).doInBackground(params);
+                    new zipAsyncTask(WordSelectionActivity.this, storageReference).execute(params);
                 }
             }
         });
@@ -143,17 +148,44 @@ public class WordSelectionActivity extends AppCompatActivity {
          */
         final int BUFFER = 2048;
         private Context mContext;
+        private String destinationPath;
+        private StorageReference storageReference;
 
-        zipAsyncTask(Context context) {
+        zipAsyncTask(Context context, StorageReference reference) {
             mContext = context;
+            storageReference = reference;
         }
 
 
         @Override
         protected Void doInBackground(final String... params) {
             // Param 0 is source, param 1 is destination
+            destinationPath = params[1];
             zipFileAtPath(params[0], params[1]);
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            Log.d("Zipper", "Files zipped and attempting to upload");
+            // Upload zip to Firebase upon zip completion
+            Uri file = Uri.fromFile(new File(destinationPath));
+            StorageReference zipRef = storageReference.child(destinationPath.substring(destinationPath.lastIndexOf("/")));
+
+            zipRef.putFile(file)
+                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            Log.d("Firebase", "File uploaded");
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.e("Firebase", "File not uploaded");
+                        }
+                    });
         }
 
         private boolean zipFileAtPath(String sourcePath, String destinationPath) {
