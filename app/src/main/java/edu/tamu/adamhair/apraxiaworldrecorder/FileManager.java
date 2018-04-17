@@ -63,14 +63,16 @@ public class FileManager {
         return userFolder.isDirectory();
     }
 
-    public static void checkAndRequestPermissions(Activity activity) {
+    public static boolean checkAndRequestPermissions(Activity activity) {
         int request_response = 0;
         if (ContextCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
                             Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO}, request_response);
+            return false;
         }
+        return true;
     }
 
     public static boolean wordFolderExists(String username, String word) {
