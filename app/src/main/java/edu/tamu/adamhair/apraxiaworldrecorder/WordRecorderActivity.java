@@ -24,6 +24,7 @@ public class WordRecorderActivity extends AppCompatActivity {
     private ArrayList<Recording> recordings;
     private RecordingViewModel recordingViewModel;
     private RepetitionViewModel repetitionViewModel;
+    private RepetitionListAdapter repetitionListAdapter;
 
     private int userId;
     private int wordId;
@@ -66,7 +67,7 @@ public class WordRecorderActivity extends AppCompatActivity {
 
         /* Set up listview with empty arraylist that will be filled later by livedata */
         recordings = new ArrayList<>();
-        final RepetitionListAdapter repetitionListAdapter = new RepetitionListAdapter(this, recordings, correctTextView, incorrectTextView);
+        repetitionListAdapter = new RepetitionListAdapter(this, recordings, correctTextView, incorrectTextView);
         repetitionListView.setAdapter(repetitionListAdapter);
         repetitionListAdapter.setUsername(username);
         repetitionListAdapter.setWord(word);
@@ -97,5 +98,11 @@ public class WordRecorderActivity extends AppCompatActivity {
             FileManager.createWordFolder(username, word);
             Log.d("Word Recorder", "Making word folder");
         }
+    }
+
+    @Override
+    public void onStop() {
+        repetitionListAdapter.releaseMediaRecorders();
+        super.onStop();
     }
 }
