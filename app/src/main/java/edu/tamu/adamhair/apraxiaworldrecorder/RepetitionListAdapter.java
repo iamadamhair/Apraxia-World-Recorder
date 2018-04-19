@@ -197,7 +197,9 @@ public class RepetitionListAdapter extends BaseAdapter {
                         // Stop recording and notify the file system to scan the new file for USB access
 //                        wavRecorders.get(position).stopRecording();
                         mediaRecorders.get(position).stop();
-                        mediaRecorders.get(position).reset();
+                        mediaRecorders.get(position).release();
+                        // Recreate the mediarecorder after using it
+                        mediaRecorders.set(position, configureMediaRecorder(recordingPaths.get(position)));
                         if (getItem(position).getFileLocation() == null) {
                             if (getItem(position).isCorrect()) {
                                 correctCount++;
@@ -247,8 +249,13 @@ public class RepetitionListAdapter extends BaseAdapter {
     }
 
     public void releaseMediaRecorders() {
+        if (recordingRep != -1) {
+            mediaRecorders.get(recordingRep).stop();
+        }
         for (int i = 0; i < mediaRecorders.size(); i++) {
-            mediaRecorders.get(i).release();
+            if(mediaRecorders.get(i) != null) {
+                mediaRecorders.get(i).release();
+            }
         }
     }
 

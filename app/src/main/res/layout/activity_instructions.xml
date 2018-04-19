@@ -5,5 +5,112 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="edu.tamu.adamhair.apraxiaworldrecorder.InstructionsActivity">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
+
+            <TextView
+                android:id="@+id/instructionsTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_alignParentTop="true"
+                android:text="This app allows you to record calibration audio for Apraxia World.\n\nYou will need to record 5 correct and 5 incorrect productions of 10 different words. Try inserting, deleting, or substituting sounds to make an incorrect pronunciation.\n\nOnce you have recorded enough words, you can export the words to Apraxia World or upload them for testing.\n\nTo start, create a profile with the username you want to use in Apraxia World. The username can only contain letters and numbers.\n\nUpon subsequent uses of this app, you can just select your username from the drop down menu.\n\nAfter you have a profile, you will see the word list. Select a word to be taken to the recording screen.\n\nBelow is an example of a one of the 10 repetitions you will see on the recording screen. To record a word, press the red Rec button. To stop a recording, press the red button again."/>
+
+            <LinearLayout
+                android:id="@+id/instructionRecordingList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:orientation="horizontal"
+                android:layout_below="@id/instructionsTextView">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:text="Rep 1"
+                    android:layout_marginLeft="16dp"
+                    android:layout_weight="0.13"
+                    />
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.35"
+                    android:gravity="center">
+                    <ImageView
+                        android:id="@+id/instructionGreenCheck"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        app:srcCompat="@drawable/green_check"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerInParent="true"
+                        android:layout_marginRight="-3dp"/>
+                    <RadioGroup
+                        android:id="@+id/instructionRadioGroup"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_toRightOf="@id/instructionGreenCheck"
+                        android:orientation="horizontal"
+                        android:layout_centerInParent="true">
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="4dp"/>
+                    </RadioGroup>
+                    <ImageView
+                        android:id="@+id/redXImageView"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        app:srcCompat="@drawable/red_x"
+                        android:layout_toRightOf="@id/instructionRadioGroup"
+                        android:layout_centerInParent="true"
+                        android:layout_marginLeft="-3dp"/>
+                </RelativeLayout>
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.50">
+                    <Button
+                        android:id="@+id/repetitionRecordButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"
+                        android:layout_marginRight="16dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_toLeftOf="@id/instructionPlayButton"
+                        android:backgroundTint="@android:color/holo_red_light"
+                        android:text="Rec"
+                        android:textColor="@android:color/white" />
+                    <Button
+                        android:id="@+id/instructionPlayButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:layout_marginBottom="4dp"
+                        android:layout_marginRight="8dp"
+                        android:layout_marginTop="4dp"
+                        android:backgroundTint="@android:color/holo_green_light"
+                        android:text="Play"
+                        android:textColor="@android:color/white" />
+                </RelativeLayout>
+            </LinearLayout>
+            <TextView
+                android:layout_below="@id/instructionRecordingList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:text="Please make sure that the recordings have a less than one second of silence before and after the word and that you do not cut off any part of the recording by stopping too soon. You can verify this by pressing the green Play button after recording. You can re-record a word as many times as necessary.\n\nOnce you have recorded a word, label it as correct or incorrect by pressing the corresponding radio button (The green check is correct, the red x is incorrect).\n\nAfter recording 10 words with 5 correct and 5 incorrect productions, you can upload or export the recordings by pressing the corresponding buttons at the top of the word list page.\n\n"/>
+        </RelativeLayout>
+    </ScrollView>
 </android.support.constraint.ConstraintLayout>

@@ -202,6 +202,7 @@ public class WordSelectionActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                             Log.d("Firebase", "File uploaded");
+                            Toast.makeText(mContext, "Files uploaded!", Toast.LENGTH_LONG).show();
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
