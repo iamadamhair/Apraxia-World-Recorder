@@ -82,7 +82,8 @@
                 android:layout_toLeftOf="@id/repetitionPlayButton"
                 android:backgroundTint="@android:color/holo_red_light"
                 android:text="Stop"
-                android:textColor="@android:color/white" />
+                android:textColor="@android:color/white"
+                android:soundEffectsEnabled="false"/>
 
             <Button
                 android:id="@+id/repetitionPlayButton"
@@ -94,7 +95,8 @@
                 android:layout_marginTop="4dp"
                 android:backgroundTint="@android:color/holo_green_light"
                 android:text="Play"
-                android:textColor="@android:color/white" />
+                android:textColor="@android:color/white"
+                android:soundEffectsEnabled="false"/>
         </RelativeLayout>
 
 

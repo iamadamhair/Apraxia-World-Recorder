@@ -37,14 +37,28 @@
                 android:layout_toRightOf="@id/repetitionThumbnailImageView"
                 android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/repetitionTitleTextView"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:gravity="center_vertical|center_horizontal"
-                    android:text="Title"
-                    android:textSize="18sp"
-                    android:layout_weight="0.5"/>
+                    android:layout_weight="0.5"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/repetitionTitleTextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical|center_horizontal"
+                        android:text="Title"
+                        android:textSize="18sp"
+                        android:layout_weight="0.5"/>
+                    <Button
+                        android:id="@+id/mfccButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.5"
+                        android:text="Compute MFCCs"/>
+                </LinearLayout>
+
+
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -121,5 +135,39 @@
             android:layout_weight="0.75"/>
     </LinearLayout>
 
+    <FrameLayout
+        android:id="@+id/progressBarHolder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:animateLayoutChanges="true"
+        android:clickable="true"
+        android:visibility="gone">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:alpha="0.4"
+            android:background="#000000"/>
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
+            <ProgressBar
+                android:id="@+id/mfccProgressBar"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminate="true"
+                android:layout_centerHorizontal="true"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:layout_below="@id/mfccProgressBar"
+                android:text="Extracting audio features..."
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"/>
+        </RelativeLayout>
+
+    </FrameLayout>
 
 </android.support.constraint.ConstraintLayout>

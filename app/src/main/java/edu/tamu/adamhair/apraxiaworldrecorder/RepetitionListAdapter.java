@@ -1,11 +1,10 @@
 package edu.tamu.adamhair.apraxiaworldrecorder;
 
 import android.content.Context;
-import android.content.Intent;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.media.MediaScannerConnection;
-import android.provider.MediaStore;
+import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,21 +12,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 
+import edu.tamu.adamhair.apraxiaworldrecorder.audio.AudioFeatureExtractor;
+import edu.tamu.adamhair.apraxiaworldrecorder.audio.DTW;
+import edu.tamu.adamhair.apraxiaworldrecorder.audio.WavRecorder;
 import edu.tamu.adamhair.apraxiaworldrecorder.database.Recording;
-import edu.tamu.adamhair.apraxiaworldrecorder.database.Repetition;
 import edu.tamu.adamhair.apraxiaworldrecorder.viewmodels.RecordingViewModel;
 import edu.tamu.adamhair.apraxiaworldrecorder.viewmodels.RepetitionViewModel;
 
@@ -41,6 +38,7 @@ public class RepetitionListAdapter extends BaseAdapter {
     private ArrayList<Recording> dataSource;
     private ArrayList<WavRecorder> wavRecorders;
     private ArrayList<MediaRecorder> mediaRecorders;
+    private ArrayList<MediaPlayer> mediaPlayers;
     private ArrayList<String> recordingPaths;
     private String username;
     private boolean recording;
@@ -53,14 +51,16 @@ public class RepetitionListAdapter extends BaseAdapter {
     private int incorrectCount;
     private TextView correctTextView;
     private TextView incorrectTextView;
+    private Button mfccButton;
 
-    public RepetitionListAdapter(Context context, ArrayList<Recording> items, TextView correctTextView, TextView incorrectTextView) {
+    public RepetitionListAdapter(Context context, ArrayList<Recording> items, TextView correctTextView, TextView incorrectTextView, Button mfccButton) {
         mContext = context;
         dataSource = items;
         layoutInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         recording = false;
         this.correctTextView = correctTextView;
         this.incorrectTextView = incorrectTextView;
+        this.mfccButton = mfccButton;
 
         correctCount = 0;
         incorrectCount = 0;
@@ -75,10 +75,17 @@ public class RepetitionListAdapter extends BaseAdapter {
         this.correctTextView.setText("Correct: " + String.valueOf(correctCount));
         this.incorrectTextView.setText("Incorrect: " + String.valueOf(incorrectCount));
 
+        if (correctCount == 5 && incorrectCount == 5) {
+            mfccButton.setEnabled(true);
+        } else {
+            mfccButton.setEnabled(false);
+        }
+
         // Initialize empty lists to be filled in when the new data comes
         recordingPaths = new ArrayList<>();
         wavRecorders = new ArrayList<>();
         mediaRecorders = new ArrayList<>();
+        mediaPlayers = new ArrayList<>();
     }
 
     @Override
@@ -151,6 +158,11 @@ public class RepetitionListAdapter extends BaseAdapter {
                         correctCount--;
                         incorrectCount++;
                     }
+                    if (correctCount == 5 && incorrectCount == 5) {
+                        mfccButton.setEnabled(true);
+                    } else {
+                        mfccButton.setEnabled(false);
+                    }
                     correctTextView.setText("Correct: " + String.valueOf(correctCount));
                     incorrectTextView.setText("Incorrect: " + String.valueOf(incorrectCount));
                     repetitionViewModel.updateWordLabelCounts(getItem(position).getWordId(), getItem(position).getUserId(), correctCount, incorrectCount);
@@ -180,10 +192,10 @@ public class RepetitionListAdapter extends BaseAdapter {
                         recording = true;
                         recordingRep = position;
 
-//                        wavRecorders.get(position).startRecording();
+                        wavRecorders.get(position).startRecording();
                         try {
-                            mediaRecorders.get(position).prepare();
-                            mediaRecorders.get(position).start();
+//                            mediaRecorders.get(position).prepare();
+//                            mediaRecorders.get(position).start();
                         } catch (Exception e) {
                             e.printStackTrace();
                             Log.e("Media Recorder", "Unable to prepare and start media recorder");
@@ -195,11 +207,11 @@ public class RepetitionListAdapter extends BaseAdapter {
                         recordingRep = -1;
 
                         // Stop recording and notify the file system to scan the new file for USB access
-//                        wavRecorders.get(position).stopRecording();
-                        mediaRecorders.get(position).stop();
-                        mediaRecorders.get(position).release();
+                        wavRecorders.get(position).stopRecording();
+//                        mediaRecorders.get(position).stop();
+//                        mediaRecorders.get(position).release();
                         // Recreate the mediarecorder after using it
-                        mediaRecorders.set(position, configureMediaRecorder(recordingPaths.get(position)));
+//                        mediaRecorders.set(position, configureMediaRecorder(recordingPaths.get(position)));
                         if (getItem(position).getFileLocation() == null) {
                             if (getItem(position).isCorrect()) {
                                 correctCount++;
@@ -225,13 +237,24 @@ public class RepetitionListAdapter extends BaseAdapter {
             public void onClick(View view) {
                 // Only play if not recording
                 if (recordingRep == -1) {
-                    try {
-                        MediaPlayer mp = new MediaPlayer();
-                        mp.setDataSource(recordingPaths.get(position));
-                        mp.prepare();
-                        mp.start();
-                    } catch (IOException e) {
-                        Log.e("MediaPlayer", "Unable to play recording");
+//                    try {
+//                        MediaPlayer mp = new MediaPlayer();
+//                        mp.setDataSource(recordingPaths.get(position));
+//                        mp.prepare();
+//                        mp.start();
+//                    } catch (IOException e) {
+//                        Log.e("MediaPlayer", "Unable to play recording");
+//                    }
+                    if (!mediaPlayers.get(position).isPlaying()) {
+                        try {
+                            mediaPlayers.get(position).reset();
+                            mediaPlayers.get(position).setDataSource(recordingPaths.get(position));
+                            mediaPlayers.get(position).prepare();
+                            mediaPlayers.get(position).start();
+                        } catch(Exception e) {
+                            Log.e("MediaPlayer", "Unable to play recording");
+                        }
+
                     }
                 }
             }
@@ -268,8 +291,9 @@ public class RepetitionListAdapter extends BaseAdapter {
         recordingPrefix = FileManager.getUserFolderString(username);
     }
 
-
     public void addItems(ArrayList<Recording> recordings) {
+        // This is called when we modify things in the database?
+        Log.d("AddItems", "Calling add items function");
         this.dataSource = recordings;
         notifyDataSetChanged();
 
@@ -282,15 +306,25 @@ public class RepetitionListAdapter extends BaseAdapter {
                 incorrectCount++;
             }
             recordingPaths.add(recordingPrefix + "/Calibration/" + word + "/" + word +
-                    "_" + String.valueOf(getItem(i).getRepetitionNumber()) + ".mp4");
-//            wavRecorders.add(new WavRecorder(recordingPaths.get(i)));
-            mediaRecorders.add(configureMediaRecorder(recordingPaths.get(i)));
+                    "_" + String.valueOf(getItem(i).getRepetitionNumber()) + ".wav");
+            wavRecorders.add(new WavRecorder(recordingPaths.get(i)));
+//            mediaRecorders.add(configureMediaRecorder(recordingPaths.get(i)));
+            mediaPlayers.add(new MediaPlayer());
+            try {
+                mediaPlayers.get(i).setDataSource(recordingPaths.get(i));
+            } catch(Exception e) {
+                Log.e("MediaPlayer", "Unable to set media path");
+            }
         }
 
+        if (correctCount == 5 && incorrectCount == 5) {
+            mfccButton.setEnabled(true);
+        } else {
+            mfccButton.setEnabled(false);
+        }
         correctTextView.setText("Correct: " + String.valueOf(correctCount));
         incorrectTextView.setText("Incorrect: " + String.valueOf(incorrectCount));
     }
-
 
     private static class RepetitionViewHolder {
         public TextView countTextView;
@@ -310,9 +344,45 @@ public class RepetitionListAdapter extends BaseAdapter {
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         mediaRecorder.setAudioEncodingBitRate(bitDepth * fs);
+        mediaRecorder.setAudioChannels(1);
         mediaRecorder.setAudioSamplingRate(fs);
         mediaRecorder.setOutputFile(path);
         return mediaRecorder;
+    }
+
+    public void runMfccProcessing() {
+
+        List<List<float[]>> allMfccs = new ArrayList<>();
+        AudioFeatureExtractor featureExtractor;
+        for (int i = 0; i < dataSource.size(); i++) {
+            if (dataSource.get(i).getFileLocation() != null) {
+                featureExtractor = new AudioFeatureExtractor(dataSource.get(i).getFileLocation(), 16000, mContext);
+                featureExtractor.generateFeatures();
+                allMfccs.add(featureExtractor.getMfccList());
+                Log.d("Mfccs", "Mfcc length: " + String.valueOf(allMfccs.get(i).size()));
+                Log.d("Mfccs", "Extracted features for " + String.valueOf(dataSource.get(i).getRepetitionNumber()));
+            }
+        }
+
+        for (int i = 0; i < allMfccs.size(); i++) {
+            for (int j = i+1; j < allMfccs.size(); j++) {
+                DTW.Result dtwResult = DTW.computeMfccDtw(allMfccs.get(i), allMfccs.get(j));
+                Log.d("RMSE", String.valueOf(i) + " & " + String.valueOf(j) + ": " +
+                String.valueOf(computeRMSE(allMfccs.get(i), allMfccs.get(j), dtwResult.getWarpingPath())));
+            }
+        }
+    }
+
+    private double computeRMSE(List<float[]> mfcc1, List<float[]> mfcc2, int[][] warp) {
+        double rmse = 0;
+        int noCoefficients = mfcc1.get(0).length;
+
+        for (int i = 0; i < warp.length; i++) {
+            for (int j = 0; j < noCoefficients; j++) {
+                rmse += Math.pow(mfcc1.get(warp[i][0])[j] - mfcc2.get(warp[i][1])[j], 2);
+            }
+        }
+        return Math.sqrt(rmse)/warp.length;
     }
 
 }

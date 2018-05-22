@@ -23,7 +23,7 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="scalingPercent" value="52" />
+                                                <entry key="scalingPercent" value="50" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -35,7 +35,7 @@
                                     <map>
                                       <entry key="backgroundAssetType" value="COLOR" />
                                       <entry key="backgroundColor" value="ffffff" />
-                                      <entry key="foregroundImage" value="C:\Users\adamhair\Documents\Code\Unity\Apraxia World\Assets\Apraxia World Icon.png" />
+                                      <entry key="foregroundImage" value="C:\Users\adamhair\Documents\Code\Android\ApraxiaWorldRecorder\Apraxia World Recorder Icon.png" />
                                       <entry key="outputName" value="awrecorder" />
                                     </map>
                                   </option>
