@@ -27,6 +27,9 @@ public interface WordDao {
     @Query("SELECT * FROM word")
     List<Word> getAllList();
 
+    @Query("SELECT word_id FROM word WHERE word_name LIKE :substring")
+    List<Integer> findIdsForWordsContainingSubstring(String substring);
+
     @Insert
     void insertAll(Word... words);
 

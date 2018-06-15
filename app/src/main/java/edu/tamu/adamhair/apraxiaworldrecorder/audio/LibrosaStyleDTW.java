@@ -1,5 +1,7 @@
 package edu.tamu.adamhair.apraxiaworldrecorder.audio;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +17,7 @@ public class LibrosaStyleDTW {
 
     public LibrosaStyleDTW(double[][] template1, double[][] template2) {
         // Always put the shorter template into the private template1
-        if (template1.length < template2.length) {
+        if (template1.length <= template2.length) {
             this.template1 = template1;
             this.template2 = template2;
         } else {
@@ -69,17 +71,19 @@ public class LibrosaStyleDTW {
         /* Find minimum index of the last row in the distance matrix */
         int minIdx = 0;
         double minVal = Double.POSITIVE_INFINITY;
-        for (int i = 0; i < this.distanceMatrix.length; i++) {
+        for (int i = 0; i < this.distanceMatrix[0].length; i++) {
             if (this.distanceMatrix[this.template1.length][i] < minVal) {
                 minIdx = i;
                 minVal = this.distanceMatrix[this.template1.length][i];
             }
         }
 
-        /* Find the path through the matrix */
-        int[] currentIdx = {this.template1.length - 1, minIdx};
+        /*  Find the path through the matrix
+            Subtract one from each because this matrix is one value longer than each template
+         */
+        int[] currentIdx = {this.template1.length, minIdx}; // subtract 1 from template length?
         List<int[]> path = new ArrayList<>();
-        int[] firstPair = {currentIdx[0], currentIdx[1]};
+        int[] firstPair = {currentIdx[0] - 1, currentIdx[1] - 1};
         path.add(firstPair);
 
         /* Don't need to find 0,0, just need to make it to the first row, which is 1 since 0 is inf */
@@ -88,7 +92,7 @@ public class LibrosaStyleDTW {
             delta = this.directionOptions[this.directionMatrix[currentIdx[0]][currentIdx[1]]];
             currentIdx[0] = currentIdx[0] - delta[0];
             currentIdx[1] = currentIdx[1] - delta[1];
-            int[] touple = {currentIdx[0], currentIdx[1]};
+            int[] touple = {currentIdx[0] - 1, currentIdx[1] - 1};
             path.add(touple);
         }
 
@@ -112,10 +116,10 @@ public class LibrosaStyleDTW {
         double distance = 0;
         for (int i = 0; i < this.warpingPath.length; i++) {
             for (int j = 0; j < this.template1[0].length; j++) {
-                distance += Math.pow(this.template1[warpingPath[i][0]][j] - this.template2[warpingPath[i][1]][j], 2);
+                distance += Math.pow(this.template1[this.warpingPath[i][0]][j] - this.template2[this.warpingPath[i][1]][j], 2);
             }
         }
-        return Math.sqrt(distance)/warpingPath.length;
+        return Math.sqrt(distance)/this.warpingPath.length;
     }
 
     private double distanceBetweenVectors(double[] vector1, double[] vector2) {

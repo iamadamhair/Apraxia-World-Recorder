@@ -39,7 +39,9 @@ public class FileManager {
                 Calibration
                     labels.dat
                     wordName
+                        distances.dat
                         rep1.wav
+                        rep1_mfcc.dat
                         ...
                 Game Recordings
                     TBD
@@ -77,6 +79,12 @@ public class FileManager {
             return false;
         }
         return true;
+    }
+
+    public static boolean checkPermissions(Activity activity) {
+        return ContextCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
     }
 
     public static boolean wordFolderExists(String username, String word) {
@@ -153,6 +161,52 @@ public class FileManager {
             Log.e("FileManager", "Unable to create labels.dat to write");
         } catch (IOException e) {
             Log.e("FileManager", "Unable to write labels.dat");
+        }
+    }
+
+    public static void recreateDistanceDatFile(double[] correctDistances, double[] incorrectDistances, String username, String word, Context context) {
+        File distanceDat = new File(getUserFolderString(username), "Calibration/" + word + "/distance.dat");
+
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(distanceDat);
+
+            for (int i = 0; i < correctDistances.length; i++) {
+                fileOutputStream.write(("c " + String.valueOf(correctDistances[i]) + " \n").getBytes());
+            }
+            for (int i = 0; i < incorrectDistances.length; i++) {
+                fileOutputStream.write(("i " + String.valueOf(incorrectDistances[i]) + " \n").getBytes());
+            }
+            fileOutputStream.close();
+
+            distanceDat.setReadable(true);
+            MediaScannerConnection.scanFile(context, new String[] {distanceDat.toString()}, null, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("FileManager", "Unable to write/create distance.dat");
+        }
+    }
+
+    public static void recreateMfccFile(double[][] mfcc, String username, String word, int rep, Context context) {
+        File mfccDat = new File(getUserFolderString(username), "Calibration/" + word + "/" +
+                String.valueOf(rep) + "_mfcc.dat");
+
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(mfccDat);
+
+            fileOutputStream.write((String.valueOf(mfcc.length) + " " + String.valueOf(mfcc[0].length) + " \n").getBytes());
+
+            for (int i = 0; i < mfcc.length; i++) {
+                for (int j = 0; j < mfcc[i].length; j++) {
+                    fileOutputStream.write((String.valueOf(mfcc[i][j]) + " \n").getBytes());
+                }
+            }
+            fileOutputStream.close();
+
+            mfccDat.setReadable(true);
+            MediaScannerConnection.scanFile(context, new String[] {mfccDat.toString()}, null, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("FileManager", "Unable to write mfcc dat file");
         }
     }
 

@@ -2,8 +2,12 @@ package edu.tamu.adamhair.apraxiaworldrecorder;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,6 +17,12 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +35,10 @@ public class SplashScreen extends AppCompatActivity {
     private UserViewModel userViewModel;
     List<Integer> userIds;
 
+    /* Firebase authentication variables */
+    private FirebaseAuth auth;
+    private FirebaseAuth.AuthStateListener authStateListener;
+
     /* UI elements */
     TextView instructionsTextView;
     Button createProfileButton;
@@ -35,6 +49,21 @@ public class SplashScreen extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
+
+        /* Set up authentication and callbacks */
+        auth = FirebaseAuth.getInstance();
+        authStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user != null) {
+                    Log.d("FirebaseAuth", user.getUid());
+                } else {
+                    Log.d("FirebaseAuth", "User logged out");
+                }
+            }
+        };
+        signInAnonymously();
 
         /* Set all UI elements */
         instructionsTextView = (TextView) findViewById(R.id.instructionsTextView);
@@ -53,7 +82,8 @@ public class SplashScreen extends AppCompatActivity {
         });
         enterButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {switchToWordSelectionActivity(view);}
+            public void onClick(View view) {switchToWordSelectionActivity(view);
+            }
         });
 
         /* Setup spinner and adapter */
@@ -95,7 +125,41 @@ public class SplashScreen extends AppCompatActivity {
         });
 
         /* Get file system permissions */
-        FileManager.checkAndRequestPermissions(this);
+        if (!FileManager.checkPermissions(this)) {
+            AlertDialog.Builder builder;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+            } else {
+                builder = new AlertDialog.Builder(this);
+            }
+            builder.setTitle("We need some app permissions")
+                    .setMessage("To record and save audio, we need access to your device microphone and files." +
+                            " We don't look at any files that this app didn't create." +
+                            " Please grant these permissions to continue using this app.")
+                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            FileManager.checkAndRequestPermissions(SplashScreen.this);
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_info)
+                    .show();
+        }
+
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        auth.addAuthStateListener(authStateListener);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (authStateListener != null) {
+            auth.removeAuthStateListener(authStateListener);
+        }
     }
 
     private void switchToInstructionActivity(View view) {
@@ -114,6 +178,15 @@ public class SplashScreen extends AppCompatActivity {
             Intent intent = new Intent(this, ProfileCreatorActivity.class);
             startActivity(intent);
         }
+    }
+
+    private void signInAnonymously() {
+        auth.signInAnonymously().addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                Log.i("FirebaseAuth", "Sign in onComplete: " + task.isSuccessful());
+            }
+        });
     }
 
     private void switchToWordSelectionActivity(View view) {

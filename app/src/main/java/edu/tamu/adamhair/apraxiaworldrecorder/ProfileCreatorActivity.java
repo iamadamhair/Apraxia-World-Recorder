@@ -5,16 +5,27 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.TextView;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.ProviderQueryResult;
+import com.google.firebase.database.DatabaseReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +46,7 @@ public class ProfileCreatorActivity extends AppCompatActivity {
     TextView infoTextView;
     EditText usernameEditText;
     EditText ageEditText;
+    FrameLayout profileCreateFrameLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +62,7 @@ public class ProfileCreatorActivity extends AppCompatActivity {
         infoTextView = (TextView) findViewById(R.id.infoTextView);
         usernameEditText = (EditText) findViewById(R.id.usernameEditText);
         ageEditText = (EditText) findViewById(R.id.ageEditText);
+        profileCreateFrameLayout = (FrameLayout) findViewById(R.id.profileCreateFrameLayout);
 
         createButton.setEnabled(false);
 
@@ -75,6 +88,7 @@ public class ProfileCreatorActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
+
                 if (validateUsername()) {
 
                     if (usernameEditText.getText().toString().length() > 0) {
@@ -166,6 +180,7 @@ public class ProfileCreatorActivity extends AppCompatActivity {
             return true;
         }
     }
+
 
     private boolean areFieldsFilledIn() {
         if (usernameEditText.getText().toString().length() > 0 && ageEditText.getText().toString().length() > 0) {

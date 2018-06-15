@@ -5,6 +5,7 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,13 +16,12 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import edu.tamu.adamhair.apraxiaworldrecorder.database.Recording;
-import edu.tamu.adamhair.apraxiaworldrecorder.database.RepetitionDao;
 import edu.tamu.adamhair.apraxiaworldrecorder.viewmodels.RecordingViewModel;
 import edu.tamu.adamhair.apraxiaworldrecorder.viewmodels.RepetitionViewModel;
 
@@ -41,12 +41,13 @@ public class WordRecorderActivity extends AppCompatActivity {
     TextView titleTextView;
     TextView correctTextView;
     TextView incorrectTextView;
-    TextView correctInfoTextView;
-    TextView incorrectInfoTextView;
     ListView repetitionListView;
     ImageView thumbnailImageView;
     Button mfccButton;
     FrameLayout overlay;
+    FrameLayout finishMessage;
+    Button finishMessageButton;
+    TextView effectSizeTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,12 +58,13 @@ public class WordRecorderActivity extends AppCompatActivity {
         titleTextView = (TextView) findViewById(R.id.repetitionTitleTextView);
         correctTextView = (TextView) findViewById(R.id.repetitionCorrectTextView);
         incorrectTextView = (TextView) findViewById(R.id.repetitionIncorrectTextView);
-        correctInfoTextView = (TextView) findViewById(R.id.repetitionCorrectInfoTextView);
-        incorrectInfoTextView = (TextView) findViewById(R.id.repetitionIncorrectInfoTextView);
         thumbnailImageView = (ImageView) findViewById(R.id.repetitionThumbnailImageView);
         repetitionListView = (ListView) findViewById(R.id.repetitionListView);
         mfccButton = findViewById(R.id.mfccButton);
         overlay = findViewById(R.id.progressBarHolder);
+        finishMessage = findViewById(R.id.effectSizeMessage);
+        finishMessageButton = findViewById(R.id.effectSizeButton);
+        effectSizeTextView = findViewById(R.id.effectSizeTextView);
 
         mfccButton.setEnabled(false);
 
@@ -86,8 +88,6 @@ public class WordRecorderActivity extends AppCompatActivity {
 
         correctTextView.setText("Correct: #");
         incorrectTextView.setText("Incorrect: #");
-        correctInfoTextView.setText("");
-        incorrectInfoTextView.setText("");
 
         setTitle("Word Recorder");
 
@@ -115,31 +115,42 @@ public class WordRecorderActivity extends AppCompatActivity {
         mfccButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                new mfccTask(overlay, repetitionListAdapter).execute();
-//                Toast.makeText(WordRecorderActivity.this, "Should compute MFCCs now", Toast.LENGTH_SHORT).show();
+                new mfccTask(overlay, finishMessage, effectSizeTextView, repetitionListAdapter).execute();
+            }
+        });
+        finishMessageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlphaAnimation outAnimation = new AlphaAnimation(1f, 0f);
+                outAnimation.setDuration(200);
+                finishMessage.setAnimation(outAnimation);
+                finishMessage.setVisibility(View.GONE);
             }
         });
     }
 
     @Override
     public void onStop() {
-        repetitionListAdapter.releaseMediaRecorders();
+        repetitionListAdapter.releaseMediaPlayers();
         super.onStop();
     }
 
     private static class mfccTask extends AsyncTask<Void, Void, Void> {
         private FrameLayout overlay;
+        private FrameLayout finishMessage;
+        private TextView messageTextView;
         private AlphaAnimation inAnimation;
-        private AlphaAnimation outAnimation;
         private RepetitionListAdapter repetitionListAdapter;
+        private double effectSize;
 
-         mfccTask(FrameLayout frameLayout, RepetitionListAdapter repetitionListAdapter) {
-            this.overlay = frameLayout;
+         mfccTask(FrameLayout processingFrameLayout, FrameLayout finishMessage,
+                  TextView effectSizeMessage, RepetitionListAdapter repetitionListAdapter) {
+            this.overlay = processingFrameLayout;
+            this.finishMessage = finishMessage;
+            this.messageTextView = effectSizeMessage;
             this.repetitionListAdapter = repetitionListAdapter;
             this.inAnimation = new AlphaAnimation(0f, 1f);
-            this.outAnimation = new AlphaAnimation(1f, 0f);
             this.inAnimation.setDuration(200);
-            this.outAnimation.setDuration(200);
         }
 
         @Override
@@ -152,13 +163,14 @@ public class WordRecorderActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            this.overlay.setAnimation(outAnimation);
             this.overlay.setVisibility(View.GONE);
+            this.finishMessage.setVisibility(View.VISIBLE);
+            this.messageTextView.setText("Effect size is " + new DecimalFormat("#0.000").format(effectSize));
         }
 
         @Override
         protected Void doInBackground(Void... params) {
-            repetitionListAdapter.runMfccProcessing();
+            effectSize = repetitionListAdapter.getEffectSize();
             return null;
         }
     }

@@ -33,6 +33,9 @@ public interface RepetitionDao {
     @Query("SELECT * FROM repetition WHERE user_id LIKE :userId ORDER BY word_name ASC")
     LiveData<List<Repetition>> findByUserIdSorted(int userId);
 
+    @Query("SELECT * FROM repetition WHERE user_id LIKE :userId AND word_id IN (:wordIds) ORDER BY word_name ASC")
+    List<Repetition> findListByUserIdAndWordIdSorted(int userId, List<Integer> wordIds);
+
     @Insert
     void insertAll(Repetition... repetitions);
 

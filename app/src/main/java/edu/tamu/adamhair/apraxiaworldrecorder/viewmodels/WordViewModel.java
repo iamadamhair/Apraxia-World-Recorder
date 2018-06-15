@@ -24,6 +24,11 @@ public class WordViewModel extends AndroidViewModel {
         return appDatabase.wordDao().findWordById(wordId);
     }
 
+    public List<Integer> getWordIdsContainingSubstring(String substring) {
+        substring = substring + "%";
+        return appDatabase.wordDao().findIdsForWordsContainingSubstring(substring);
+    }
+
     public List<Word> getAllWords() { return appDatabase.wordDao().getAllList(); }
 
 }

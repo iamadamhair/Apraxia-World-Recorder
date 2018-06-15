@@ -41,6 +41,11 @@ public class RepetitionViewModel extends AndroidViewModel {
         return appDatabase.repetitionDao().findByUserIdSorted(userId);
     }
 
+
+    public List<Repetition> getRepetitionListByUserIdAndWordIdsSorted(int userId, List<Integer> wordIds) {
+        return appDatabase.repetitionDao().findListByUserIdAndWordIdSorted(userId, wordIds);
+    }
+
     public void populateRepetitions(final String[] words, User user, Intent intent, Application application) {
         new addAsyncTask(appDatabase, user, intent, application).execute(words);
     }
@@ -111,19 +116,20 @@ public class RepetitionViewModel extends AndroidViewModel {
             User user = db.userDao().findByUsername(this.user.getUsername());
             this.userId = user.getUid();
 
-            Repetition[] repetitions = new Repetition[numWords];
+            Repetition[] repetitions = new Repetition[params.length];
 
             int[] wordIndices = randomIndices(numWords, params.length);
 
-            for (int i = 0; i < numWords; i++) {
-                repetitions[i] = new Repetition(user.getUid(), params[wordIndices[i]], db.wordDao().findIdByWord(params[wordIndices[i]]), 0, 0);
+            for (int i = 0; i < params.length; i++) {
+//                repetitions[i] = new Repetition(user.getUid(), params[wordIndices[i]], db.wordDao().findIdByWord(params[wordIndices[i]]), 0, 0);
+                repetitions[i] = new Repetition(user.getUid(), params[i], db.wordDao().findIdByWord(params[i]), 0, 0);
             }
 
-            Recording[] recordings = new Recording[numWords*numReps];
+            Recording[] recordings = new Recording[params.length*numReps];
             int idx = 0;
-            for (int i = 0; i < numWords; i++) {
+            for (int i = 0; i < params.length; i++) {
                 for (int j = 0; j < numReps; j++) {
-                    recordings[idx] = new Recording(user.getUid(), null, db.wordDao().findIdByWord(params[wordIndices[i]]),
+                    recordings[idx] = new Recording(user.getUid(), null, db.wordDao().findIdByWord(params[i]),
                             false, j+1);
                     Log.d("Repetition", String.valueOf(j+1));
                     idx++;

@@ -1,5 +1,7 @@
 package edu.tamu.adamhair.apraxiaworldrecorder.audio;
 
+import android.util.Log;
+
 import org.apache.commons.math3.transform.DftNormalization;
 import org.apache.commons.math3.transform.FastFourierTransformer;
 import org.apache.commons.math3.transform.TransformType;
@@ -14,10 +16,6 @@ public class AudioProcessor {
     private int frameOverlap;
     private float[] audioData;
 
-    public AudioProcessor() {
-
-    }
-
     public AudioProcessor(int fs, int frameLength, int frameOverlap) {
         /* frameLength and frameOverlap are in samples */
         this.fs = fs;
@@ -29,21 +27,7 @@ public class AudioProcessor {
         this.audioData = audioData;
     }
 
-    public Complex[][] computeSpectrogram() {
-        /* Computes a spectrogram using the abs of the fft */
-        int noFrames = (int) Math.ceil((audioData.length - frameOverlap) / (frameLength - frameOverlap));
-        Complex[][] frame = new Complex[noFrames][frameLength];
-        for (int i = 0; i < noFrames; i++) {
-            for (int j = 0; j < frameLength; j++) {
-                int audioIdx = i*(frameLength - frameOverlap) + j;
-                frame[i][j] = new Complex(applyHammingWindow((double) audioData[audioIdx], j), 0);
-            }
-            InplaceFFT.fft(frame[i]);
-        }
-        return frame;
-    }
-
-    public double[][] apacheChommonsFftResponse() {
+    public double[][] computeFftResponse() {
         int noFrames = (int) Math.ceil((audioData.length - frameOverlap) / (frameLength - frameOverlap));
         double[][] fftResponse = new double[noFrames][frameLength];
         for (int i = 0; i < noFrames; i++) {
@@ -64,32 +48,10 @@ public class AudioProcessor {
         return fftResponse;
     }
 
-    public double[][] computeFftResponse() {
-        /* Computes a spectrogram using the abs of the fft */
-        int noFrames = (int) Math.ceil((audioData.length - frameOverlap) / (frameLength - frameOverlap));
-        Complex[][] frame = new Complex[noFrames][frameLength];
-        for (int i = 0; i < noFrames; i++) {
-            for (int j = 0; j < frameLength; j++) {
-                int audioIdx = i*(frameLength - frameOverlap) + j;
-                frame[i][j] = new Complex(applyHammingWindow((double) audioData[audioIdx], j), 0);
-            }
-            InplaceFFT.fft(frame[i]);
-        }
-
-        double[][] fftResponse = new double[noFrames][frameLength];
-        for (int i = 0; i < noFrames; i++) {
-            for (int j = 0; j < frameLength; j++) {
-                fftResponse[i][j] = frame[i][j].abs();
-            }
-        }
-
-        return fftResponse;
-    }
-
     public double[][] computeMfccs(int noCoeffs) {
         int noFrames = (int) Math.ceil((audioData.length - frameOverlap) / (frameLength - frameOverlap));
 //        double[][] fftResponse = computeFftResponse();
-        double[][] fftResponse = apacheChommonsFftResponse();
+        double[][] fftResponse = computeFftResponse();
         MFCC mfcc = new MFCC();
         mfcc.generateFilterBank(noCoeffs, this.frameLength, this.fs);
 
@@ -131,6 +93,44 @@ public class AudioProcessor {
             return null;
         }
     }
+
+    public double computeEffectSize(double[] correctScores, double[] incorrectScores) {
+        double correctMean = 0;
+        double correctVar = 0;
+        double incorrectMean = 0;
+        double incorrectVar = 0;
+
+        // Compute mean of correct scores
+        for (int i = 0; i < correctScores.length; i++) {
+            correctMean += correctScores[i];
+        }
+        correctMean /= correctScores.length;
+
+        // Compute variance of correct scores
+        for (int i = 0; i < correctScores.length; i++) {
+            correctVar += Math.pow(correctScores[i]-correctMean, 2);
+        }
+        correctVar /= correctScores.length;
+
+        // Compute mean of incorrect scores
+        for (int i = 0; i < incorrectScores.length; i++) {
+            incorrectMean += incorrectScores[i];
+        }
+        incorrectMean /= incorrectScores.length;
+
+        // Compute variance of correct scores
+        for (int i = 0; i < incorrectScores.length; i++) {
+            incorrectVar += Math.pow(incorrectScores[i]-incorrectMean, 2);
+        }
+        incorrectVar /= incorrectScores.length;
+
+        double pooledStdDev = (correctScores.length - 1)*correctVar + (incorrectScores.length - 1)*incorrectVar;
+        pooledStdDev /= correctScores.length + incorrectScores.length - 2;
+        pooledStdDev = Math.sqrt(pooledStdDev);
+
+        return Math.abs((correctMean - incorrectMean) / pooledStdDev);
+    }
+
 
     private double fix(double value) {
         /* Meant to replicate the Matlab fix function. Round towards zero */

@@ -101,4 +101,36 @@
         </RelativeLayout>
     </LinearLayout>
 
+    <FrameLayout
+        android:id="@+id/profileCreateFrameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#000000"
+            android:alpha="0.4"/>
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
+            <ProgressBar
+                android:id="@+id/profileCreateProgressBar"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminate="true"
+                android:layout_centerHorizontal="true"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:layout_below="@id/profileCreateProgressBar"
+                android:text="Creating profile..."
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"/>
+        </RelativeLayout>
+    </FrameLayout>
+
 </android.support.constraint.ConstraintLayout>

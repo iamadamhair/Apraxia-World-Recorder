@@ -7,6 +7,7 @@ import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,6 +27,9 @@ public interface RecordingDao {
 
     @Query("SELECT * FROM recording WHERE user_id LIKE :userId AND word_id LIKE :wordId")
     LiveData<List<Recording>> findByUserIdAndWordId(int userId, int wordId);
+
+    @Query("SELECT * FROM recording WHERE user_id LIKE :userId AND word_id LIKE :wordId")
+    List<Recording> findListByUserIdAndWordId(int userId, int wordId);
 
     @Query("SELECT * FROM recording WHERE recording_id LIKE :recordingId")
     Recording findByRecordingId(int recordingId);

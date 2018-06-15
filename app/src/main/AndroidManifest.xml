@@ -26,6 +26,7 @@
         <activity android:name=".InstructionsActivity"
             android:screenOrientation="portrait"/>
         <activity android:name=".WordSelectionActivity"
+            android:windowSoftInputMode="adjustPan"
             android:screenOrientation="portrait"/>
         <activity android:name=".WordRecorderActivity"
             android:screenOrientation="portrait"/>

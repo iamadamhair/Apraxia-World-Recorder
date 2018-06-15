@@ -2,6 +2,17 @@ package edu.tamu.adamhair.apraxiaworldrecorder.audio;
 
 import android.util.Log;
 
+/*  MFCC generator class
+    Adam Hair 2018
+
+    Usage:
+    1. Initialize an MFCC instance (Returns new MFCC instance)
+    2. Generate the filter bank (Returns nothing)
+    3. Generate the MFCCs (Returns double[] of length noCoeffs)
+    4. Apply mean cepstral normalization, if desired (Returns double[] of length noCoeffs)
+
+ */
+
 public class MFCC {
 
     private double[][] filterBank;
@@ -11,7 +22,6 @@ public class MFCC {
     public double[] generateMfccs(double[] frame) {
 
         double[] melFreqs = new double[noCoeffs];
-        Log.d("Frame",String.valueOf(frame.length));
         for (int i = 0; i < noCoeffs; i++) {
 
             melFreqs[i] = 0;

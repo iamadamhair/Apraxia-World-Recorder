@@ -7,11 +7,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Environment;
+import android.os.Handler;
 import android.util.Log;
 
 /*
@@ -44,7 +47,6 @@ public class WavRecorder {
         audioData = new short[bufferSize]; // short array that pcm data is put
         // into.
         output = path;
-
     }
 
     private String getFilename() {
