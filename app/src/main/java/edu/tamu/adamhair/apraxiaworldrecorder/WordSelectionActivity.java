@@ -16,8 +16,12 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -75,6 +79,8 @@ public class WordSelectionActivity extends AppCompatActivity {
     FrameLayout confirmationFrameLayout;
     EditText wordSearchEditText;
 
+    WordListAdapter wordListAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -101,7 +107,7 @@ public class WordSelectionActivity extends AppCompatActivity {
 
         /* Set up ListView with empty ArrayList until LiveData fills it in */
         ArrayList<Repetition> repetitions = new ArrayList<>();
-        final WordListAdapter wordListAdapter = new WordListAdapter(getApplication(), repetitions);
+        wordListAdapter = new WordListAdapter(getApplication(), repetitions);
         wordList.setAdapter(wordListAdapter);
         wordListAdapter.setUsername(username);
 
@@ -110,7 +116,8 @@ public class WordSelectionActivity extends AppCompatActivity {
         recordingViewModel = ViewModelProviders.of(this).get(RecordingViewModel.class);
         wordViewModel = ViewModelProviders.of(this).get(WordViewModel.class);
 
-        repetitionViewModel.getRepetitionsByUserIdSorted(userId).observe(WordSelectionActivity.this, new Observer<List<Repetition>>() {
+        // getRepetitionsByUserIdSorted
+        repetitionViewModel.getRepetitionsMarkedForExport(userId).observe(WordSelectionActivity.this, new Observer<List<Repetition>>() {
             @Override
             public void onChanged(@Nullable List<Repetition> repetitions) {
 //                wordListAdapter.addItems(repetitions);
@@ -139,11 +146,26 @@ public class WordSelectionActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (wordsCompleted < 10) {
-                    Toast.makeText(WordSelectionActivity.this, "You need to record " + String.valueOf(10-wordsCompleted) + " more word sets", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(WordSelectionActivity.this, "You need to select " + String.valueOf(10-wordsCompleted) + " more word sets", Toast.LENGTH_SHORT).show();
                 } else {
                     new exportAudioAsyncTask(WordSelectionActivity.this, exportFrameLayout, confirmationFrameLayout, userId,
-                            username, repetitionList, recordingViewModel).execute();
+                            username, repetitionList, recordingViewModel, wordViewModel).execute();
                 }
+            }
+        });
+        wordSearchEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if (!b) {
+                    hideKeyboard(view);
+                }
+            }
+        });
+        wordList.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                hideKeyboard(wordSearchEditText);
+                return false;
             }
         });
 
@@ -179,6 +201,19 @@ public class WordSelectionActivity extends AppCompatActivity {
                 new wordSearchAsyncTask(wordListAdapter, repetitionViewModel, wordViewModel, substring, userId).execute();
             }
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        new wordSearchAsyncTask(wordListAdapter, repetitionViewModel, wordViewModel,
+                wordSearchEditText.getText().toString(), userId).execute();
+
+    }
+
+    private void hideKeyboard(View view) {
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
     @Override
@@ -230,9 +265,10 @@ public class WordSelectionActivity extends AppCompatActivity {
         private String username;
         private List<Repetition> repetitionList;
         private RecordingViewModel recordingViewModel;
+        private WordViewModel wordViewModel;
 
         exportAudioAsyncTask(Context context, FrameLayout exportOverlay, FrameLayout confirmationOverlay, int userId, String username,
-                             List<Repetition> repetitionList, RecordingViewModel recordingViewModel) {
+                             List<Repetition> repetitionList, RecordingViewModel recordingViewModel, WordViewModel wordViewModel) {
             this.context = context;
             this.exportOverlay = exportOverlay;
             this.confirmationOverlay = confirmationOverlay;
@@ -240,6 +276,7 @@ public class WordSelectionActivity extends AppCompatActivity {
             this.username = username;
             this.repetitionList = repetitionList;
             this.recordingViewModel = recordingViewModel;
+            this.wordViewModel = wordViewModel;
         }
 
         @Override
@@ -258,11 +295,14 @@ public class WordSelectionActivity extends AppCompatActivity {
             int frameOverlap = 128;
             int padSize = frameLength / 2;
 
+            List<Recording> allRecordings = new ArrayList<>();
+
             for (int i = 0; i < repetitionList.size(); i++) {
                 // Make sure this is a complete word set
                 if (repetitionList.get(i).getNumCorrect() > 4 && repetitionList.get(i).getNumIncorrect() > 4) {
                     int wordId = repetitionList.get(i).getWordId();
                     List<Recording> recordings = recordingViewModel.getRecordingArrayListOfUserAndWord(userId, wordId);
+                    allRecordings.addAll(recordings);
 
                     /* Get all MFCCS */
                     List<float[]> audioData = getAudioData(recordings, frameLength, padSize);
@@ -301,6 +341,10 @@ public class WordSelectionActivity extends AppCompatActivity {
                     }
                 }
             }
+
+            /* Write to file */
+            FileManager.recreateRepetitionDatFile(allRecordings, username, context);
+            FileManager.recreateWordsDatFile(wordViewModel.getAllWords(), username, context);
 
             return null;
         }

@@ -275,10 +275,12 @@ public class RepetitionListAdapter extends BaseAdapter {
 
     public void releaseMediaPlayers() {
         for (int i = 0; i < mediaPlayers.size(); i++) {
-            if (mediaPlayers.get(i).isPlaying()) {
-                mediaPlayers.get(i).stop();
+            if (mediaPlayers.get(i) != null) {
+                if (mediaPlayers.get(i).isPlaying()) {
+                    mediaPlayers.get(i).stop();
+                }
+                mediaPlayers.get(i).release();
             }
-            mediaPlayers.get(i).release();
         }
     }
 

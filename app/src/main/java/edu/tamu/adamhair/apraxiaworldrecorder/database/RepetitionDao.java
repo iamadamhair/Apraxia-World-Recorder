@@ -36,6 +36,15 @@ public interface RepetitionDao {
     @Query("SELECT * FROM repetition WHERE user_id LIKE :userId AND word_id IN (:wordIds) ORDER BY word_name ASC")
     List<Repetition> findListByUserIdAndWordIdSorted(int userId, List<Integer> wordIds);
 
+    @Query("SELECT * FROM repetition WHERE user_id LIKE :userId AND should_export LIKE 1 ORDER BY word_name ASC")
+    LiveData<List<Repetition>> findRepetitionsToExport(int userId);
+
+//    @Query("SELECT should_export FROM repetition WHERE user_id LIKE :userId AND word_id LIKE :wordId")
+//    LiveData<Boolean> shouldExportWordFromUser(int userId, int wordId);
+
+    @Query("SELECT * FROM repetition WHERE user_id LIKE :userId AND word_id LIKE :wordId")
+    LiveData<Repetition> getRepetitionForUserAndWord(int userId, int wordId);
+
     @Insert
     void insertAll(Repetition... repetitions);
 

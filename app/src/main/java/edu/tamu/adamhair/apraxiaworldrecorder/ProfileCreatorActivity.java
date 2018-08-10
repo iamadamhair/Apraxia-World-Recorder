@@ -149,6 +149,10 @@ public class ProfileCreatorActivity extends AppCompatActivity {
         new writeUserDatAsync(this).execute(usernames);
         repetitionViewModel.populateRepetitions(this.getResources().getStringArray(R.array.ndp3_images),
                 user, intent, getApplication());
+//        userViewModel.addUser(user);
+//        intent.putExtra("userId", user.getUid());
+//        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        startActivity(intent);
     }
 
     private void switchToWordSelectionActivity(View view) {

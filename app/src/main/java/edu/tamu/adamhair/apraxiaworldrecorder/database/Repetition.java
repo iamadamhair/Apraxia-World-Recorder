@@ -28,12 +28,20 @@ public class Repetition {
     @ColumnInfo(name = "num_incorrect")
     private int numIncorrect;
 
-    public Repetition(int userId, String wordName, int wordId, int numCorrect, int numIncorrect) {
+    @ColumnInfo(name = "asr_tested")
+    private boolean asrTested;
+
+    @ColumnInfo(name = "should_export")
+    private boolean shouldExport;
+
+    public Repetition(int userId, String wordName, int wordId, int numCorrect, int numIncorrect, boolean shouldExport, boolean asrTested) {
         this.userId = userId;
         this.wordId = wordId;
         this.wordName = wordName;
         this.numCorrect = numCorrect;
         this.numIncorrect = numIncorrect;
+        this.shouldExport = shouldExport;
+        this.asrTested = asrTested;
     }
 
     public int getRepetition_id() {
@@ -83,4 +91,16 @@ public class Repetition {
     public void setNumIncorrect(int numIncorrect) {
         this.numIncorrect = numIncorrect;
     }
+
+    public boolean shouldExport() {
+        return shouldExport;
+    }
+
+    public void setShouldExport(boolean shouldExport) {
+        this.shouldExport = shouldExport;
+    }
+
+    public boolean asrTested() {return asrTested;}
+
+    public void setAsrTested(boolean asrTested) {this.asrTested = asrTested;}
 }

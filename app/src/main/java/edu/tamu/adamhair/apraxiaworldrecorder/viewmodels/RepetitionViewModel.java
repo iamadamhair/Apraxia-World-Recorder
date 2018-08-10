@@ -29,6 +29,14 @@ public class RepetitionViewModel extends AndroidViewModel {
         repetitions = appDatabase.repetitionDao().getAll();
     }
 
+//    public LiveData<Boolean> checkExportFromUserAndWord(int userId, int wordId) {
+//        return appDatabase.repetitionDao().shouldExportWordFromUser(userId, wordId);
+//    }
+
+    public LiveData<Repetition> getRepetitionForUserAndWord(int userId, int wordId) {
+        return appDatabase.repetitionDao().getRepetitionForUserAndWord(userId, wordId);
+    }
+
     public LiveData<List<Repetition>> getRepetitions() {
         return repetitions;
     }
@@ -41,6 +49,9 @@ public class RepetitionViewModel extends AndroidViewModel {
         return appDatabase.repetitionDao().findByUserIdSorted(userId);
     }
 
+    public LiveData<List<Repetition>> getRepetitionsMarkedForExport(int userId) {
+        return appDatabase.repetitionDao().findRepetitionsToExport(userId);
+    }
 
     public List<Repetition> getRepetitionListByUserIdAndWordIdsSorted(int userId, List<Integer> wordIds) {
         return appDatabase.repetitionDao().findListByUserIdAndWordIdSorted(userId, wordIds);
@@ -52,6 +63,10 @@ public class RepetitionViewModel extends AndroidViewModel {
 
     public List<Repetition> getRepetitionsListByUser(int userId) {return appDatabase.repetitionDao().getAllOfAUserList(userId);}
 
+    public void updateRepetition(Repetition repetition) {
+        new updateRepetitionAsyncTask(appDatabase).execute(repetition);
+    }
+
     public void updateWordLabelCounts(int wordId, int userId, int correct, int incorrect) {
         Integer[] params = new Integer[4];
         params[0] = userId;
@@ -59,6 +74,20 @@ public class RepetitionViewModel extends AndroidViewModel {
         params[2] = correct;
         params[3] = incorrect;
         new updateCountsAsyncTask(appDatabase).execute(params);
+    }
+
+    private static class updateRepetitionAsyncTask extends AsyncTask<Repetition, Void, Void> {
+        AppDatabase appDatabase;
+
+        updateRepetitionAsyncTask(AppDatabase db) {
+            appDatabase = db;
+        }
+
+        @Override
+        protected Void doInBackground(Repetition... repetitions) {
+            appDatabase.repetitionDao().update(repetitions);
+            return null;
+        }
     }
 
     private static class updateCountsAsyncTask extends AsyncTask<Integer, Void, Void> {
@@ -122,10 +151,10 @@ public class RepetitionViewModel extends AndroidViewModel {
 
             for (int i = 0; i < params.length; i++) {
 //                repetitions[i] = new Repetition(user.getUid(), params[wordIndices[i]], db.wordDao().findIdByWord(params[wordIndices[i]]), 0, 0);
-                repetitions[i] = new Repetition(user.getUid(), params[i], db.wordDao().findIdByWord(params[i]), 0, 0);
+                repetitions[i] = new Repetition(user.getUid(), params[i], db.wordDao().findIdByWord(params[i]), 0, 0, false,false);
             }
 
-            Recording[] recordings = new Recording[params.length*numReps];
+            /*Recording[] recordings = new Recording[params.length*numReps];
             int idx = 0;
             for (int i = 0; i < params.length; i++) {
                 for (int j = 0; j < numReps; j++) {
@@ -134,10 +163,10 @@ public class RepetitionViewModel extends AndroidViewModel {
                     Log.d("Repetition", String.valueOf(j+1));
                     idx++;
                 }
-            }
+            }*/
 
             db.repetitionDao().insertAll(repetitions);
-            db.recordingDao().insertAll(recordings);
+            //db.recordingDao().insertAll(recordings);
             return null;
         }
 
