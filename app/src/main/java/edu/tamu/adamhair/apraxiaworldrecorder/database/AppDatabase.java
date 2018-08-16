@@ -23,6 +23,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract RecordingDao recordingDao();
     public abstract RepetitionDao repetitionDao();
     public abstract WordDao wordDao();
+    public abstract ProbeDao probeDao();
 
     public static AppDatabase getAppDatabase(final Context context) {
         if (INSTANCE == null) {
