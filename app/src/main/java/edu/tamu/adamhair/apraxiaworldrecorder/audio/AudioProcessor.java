@@ -60,8 +60,8 @@ public class AudioProcessor {
             mfccs[i] = mfcc.generateMfccs(fftResponse[i]);
         }
 
-//        return mfccs;
-        return mfcc.applyMeanCeptralNormalization(mfccs);
+        return mfccs;
+//        return mfcc.applyMeanCepstralNormalization(mfccs);
     }
 
     private double applyHammingWindow(double data, int position) {

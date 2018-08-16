@@ -41,11 +41,28 @@
                     android:layout_marginTop="8dp"
                     android:text="Completed words: #"
                     android:layout_below="@id/wordSelectionUsernameTextView"/>
+
             </RelativeLayout>
 
 
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true">
+
+                <ImageButton
+                    android:id="@+id/menuImageButton"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/ic_action_more_vert"
+                    android:scaleType="fitCenter"
+                    android:layout_marginRight="16dp"
+                    android:onClick="showMenu"/>
+            </RelativeLayout>
 
             <RelativeLayout
+                android:visibility="invisible"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="16dp"

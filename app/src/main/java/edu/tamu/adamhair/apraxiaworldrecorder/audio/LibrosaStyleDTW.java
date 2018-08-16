@@ -69,14 +69,16 @@ public class LibrosaStyleDTW {
         }
 
         /* Find minimum index of the last row in the distance matrix */
-        int minIdx = 0;
-        double minVal = Double.POSITIVE_INFINITY;
-        for (int i = 0; i < this.distanceMatrix[0].length; i++) {
-            if (this.distanceMatrix[this.template1.length][i] < minVal) {
-                minIdx = i;
-                minVal = this.distanceMatrix[this.template1.length][i];
-            }
-        }
+//        int minIdx = 0;
+//        double minVal = Double.POSITIVE_INFINITY;
+//        for (int i = 0; i < this.distanceMatrix[0].length; i++) {
+//            if (this.distanceMatrix[this.template1.length][i] < minVal) {
+//                minIdx = i;
+//                minVal = this.distanceMatrix[this.template1.length][i];
+//            }
+//        }
+        // Now force the DTW along the entirety of the matrix
+        int minIdx = this.template2.length;
 
         /*  Find the path through the matrix
             Subtract one from each because this matrix is one value longer than each template

@@ -91,7 +91,7 @@ public class MFCC {
         return mfccs;
     }
 
-    public double[][] applyMeanCeptralNormalization(double[][] mfcc) {
+    public static double[][] applyMeanCepstralNormalization(double[][] mfcc) {
         double[] means = new double[mfcc[0].length];
         double[][] normalizedMfcc = new double[mfcc.length][mfcc[0].length];
 
