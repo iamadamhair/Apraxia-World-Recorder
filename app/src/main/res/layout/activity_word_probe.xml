@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".WordProbeActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.15">
+
+            <TextView
+                android:id="@+id/dateTimeTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_alignParentLeft="true"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="16dp"
+                android:textAlignment="center"
+                android:text="Date and time" />
+
+            <Button
+                android:id="@+id/uploadProbeButton"
+                android:layout_alignParentRight="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="16dp"
+                android:text="Upload Probe"/>
+
+            <View style="@style/Divider" android:layout_alignParentBottom="true"/>
+        </RelativeLayout>
+
+        <ListView
+            android:id="@+id/probeWordsListView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.70"/>
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/probeFrameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#111"
+            android:alpha="0.4"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginRight="50dp"
+            android:layout_marginLeft="50dp"
+            android:layout_marginTop="50dp"
+            android:layout_marginBottom="50dp">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#FFF"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="0.5"
+                    android:orientation="vertical">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="0.80">
+
+                        <ImageView
+                            android:id="@+id/probeImageView"
+                            android:layout_width="150dp"
+                            android:layout_height="150dp"
+                            android:layout_centerHorizontal="true"
+                            android:layout_centerVertical="true"
+                            android:background="#111"/>
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="0.2"
+                        android:gravity="center">
+
+                        <TextView
+                            android:id="@+id/probeWordTextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAlignment="center"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:text="Word"/>
+                    </RelativeLayout>
+
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="0.5"
+                    android:orientation="vertical">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="0.35"
+                        android:gravity="center">
+
+                        <Button
+                            android:id="@+id/probeRecordButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="30dp"
+                            android:layout_toLeftOf="@id/probePlayButton"
+                            android:backgroundTint="@android:color/holo_red_light"
+                            android:text="Stop"
+                            android:textColor="@android:color/white"
+                            android:soundEffectsEnabled="false"/>
+
+                        <Button
+                            android:id="@+id/probePlayButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentRight="true"
+                            android:backgroundTint="@android:color/holo_green_light"
+                            android:text="Play"
+                            android:textColor="@android:color/white"
+                            android:soundEffectsEnabled="false"/>
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="0.35"
+                        android:gravity="center">
+
+                        <ImageView
+                            android:id="@+id/probeCheckImageView"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            app:srcCompat="@drawable/green_check"
+                            android:layout_alignParentLeft="true"
+                            android:layout_centerInParent="true"/>
+
+                        <RadioGroup
+                            android:id="@+id/probeLabelRadioGroup"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_toRightOf="@id/probeCheckImageView"
+                            android:orientation="horizontal"
+                            android:layout_centerInParent="true">
+
+                            <RadioButton
+                                android:id="@+id/probeCorrectRadioButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
+                            <RadioButton
+                                android:id="@+id/probeIncorrectRadioButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="20dp"/>
+                        </RadioGroup>
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            app:srcCompat="@drawable/red_x"
+                            android:layout_toRightOf="@id/probeLabelRadioGroup"
+                            android:layout_centerInParent="true"/>
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="0.30"
+                        android:gravity="center">
+
+                        <Button
+                            android:id="@+id/probeOkButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ok" />
+                    </RelativeLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+        </RelativeLayout>
+
+
+    </FrameLayout>
+
+</android.support.constraint.ConstraintLayout>
