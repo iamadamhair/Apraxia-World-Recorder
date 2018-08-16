@@ -16,16 +16,16 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,6 +34,8 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -48,6 +50,7 @@ import java.util.zip.ZipOutputStream;
 
 import edu.tamu.adamhair.apraxiaworldrecorder.audio.AudioProcessor;
 import edu.tamu.adamhair.apraxiaworldrecorder.audio.LibrosaStyleDTW;
+import edu.tamu.adamhair.apraxiaworldrecorder.audio.MFCC;
 import edu.tamu.adamhair.apraxiaworldrecorder.database.Recording;
 import edu.tamu.adamhair.apraxiaworldrecorder.database.Repetition;
 import edu.tamu.adamhair.apraxiaworldrecorder.database.Word;
@@ -78,6 +81,7 @@ public class WordSelectionActivity extends AppCompatActivity {
     FrameLayout exportFrameLayout;
     FrameLayout confirmationFrameLayout;
     EditText wordSearchEditText;
+    ImageButton menuImageButton;
 
     WordListAdapter wordListAdapter;
 
@@ -99,6 +103,7 @@ public class WordSelectionActivity extends AppCompatActivity {
         exportFrameLayout = findViewById(R.id.exportFrameLayout);
         confirmationFrameLayout = findViewById(R.id.exportConfirmFrameLayout);
         wordSearchEditText = findViewById(R.id.wordSearchEditText);
+        menuImageButton = findViewById(R.id.menuImageButton);
 
         Intent intent = getIntent();
         username = intent.getStringExtra("username");
@@ -222,6 +227,66 @@ public class WordSelectionActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void showMenu(View v) {
+        PopupMenu popup = new PopupMenu(this, v);
+
+        popup.inflate(R.menu.word_action_menu);
+
+        // Add onclick listener
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                if (menuItem.getItemId() == R.id.showSelected) {
+
+                    repetitionViewModel.getRepetitionsMarkedForExport(userId).observe(WordSelectionActivity.this, new Observer<List<Repetition>>() {
+                        @Override
+                        public void onChanged(@Nullable List<Repetition> repetitions) {
+                            wordListAdapter.addItems(repetitions);
+                        }
+                    });
+
+                } else if (menuItem.getItemId() == R.id.probe) {
+
+                    launchProbeSelectionActivity();
+
+                } else if (menuItem.getItemId() == R.id.uploadToCloud) {
+
+                    // See if enough words are completed before uploading the audio
+                    if (wordsCompleted < 10) {
+                        Toast.makeText(WordSelectionActivity.this, "You need to record " + String.valueOf(10-wordsCompleted) + " more word sets", Toast.LENGTH_SHORT).show();
+                    } else {
+                        String params[] = new String[2];
+                        params[0] = FileManager.getUserFolderString(username);
+                        params[1] = Environment.getExternalStorageDirectory().toString() + "/" + username + ".zip";
+                        new zipAsyncTask(WordSelectionActivity.this, storageReference,
+                                recordingViewModel, wordViewModel, userId, username, uploadFrameLayout, confirmationFrameLayout).execute(params);
+                    }
+
+                } else if (menuItem.getItemId() == R.id.exportToGame) {
+
+                    // See if enough words are completed before exporting the audio
+                    if (wordsCompleted < 10) {
+                        Toast.makeText(WordSelectionActivity.this, "You need to select " + String.valueOf(10-wordsCompleted) + " more word sets", Toast.LENGTH_SHORT).show();
+                    } else {
+                        new exportAudioAsyncTask(WordSelectionActivity.this, exportFrameLayout, confirmationFrameLayout, userId,
+                                username, repetitionList, recordingViewModel, wordViewModel).execute();
+                    }
+
+                }
+                return true;
+            }
+        });
+
+        popup.show();
+    }
+
+    private void launchProbeSelectionActivity() {
+        Intent intent = new Intent(this, ProbeSelectionActivity.class);
+        intent.putExtra("username", username);
+        intent.putExtra("userId", userId);
+        startActivity(intent);
+    }
+
     private static class wordSearchAsyncTask extends AsyncTask<Void, Void, Void> {
         private WordListAdapter wordListAdapter;
         private RepetitionViewModel repetitionViewModel;
@@ -292,8 +357,10 @@ public class WordSelectionActivity extends AppCompatActivity {
         protected Void doInBackground(Void... params) {
             int fs = 16000;
             int frameLength = 512;
-            int frameOverlap = 128;
+            int frameOverlap = 512 - 128;
             int padSize = frameLength / 2;
+
+            //FileManager.clearCalibrationAudio(username);
 
             List<Recording> allRecordings = new ArrayList<>();
 
@@ -314,9 +381,9 @@ public class WordSelectionActivity extends AppCompatActivity {
                     for (int j = 0; j < audioData.size(); j++) {
                         audioProcessor.setAudioData(audioData.get(j));
                         if (recordings.get(j).isCorrect()) {
-                            correctMfccs.add(audioProcessor.computeMfccs(13));
+                            correctMfccs.add(MFCC.applyMeanCepstralNormalization(trimMfccOnEnergy(audioProcessor.computeMfccs(13))));
                         } else {
-                            incorrectMfccs.add(audioProcessor.computeMfccs(13));
+                            incorrectMfccs.add(MFCC.applyMeanCepstralNormalization(trimMfccOnEnergy(audioProcessor.computeMfccs(13))));
                         }
                     }
 
@@ -367,23 +434,40 @@ public class WordSelectionActivity extends AppCompatActivity {
             }, 2500);
         }
 
+        private float[] applyPreemphasis(float[] audioData, float alpha) {
+            float[] filteredAudio = new float[audioData.length];
+            filteredAudio[0] = audioData[0];
+            for (int i = 1; i < audioData.length; i++){
+                filteredAudio[i] = audioData[i] - alpha*audioData[i-1];
+            }
+            return filteredAudio;
+        }
+
         private List<float[]> getAudioData(List<Recording> recordings, int frameLength, int padSize) {
+            int trimFrames = 2048;
+
             List<float[]> audioData = new ArrayList<>();
             for (int j = 0; j < recordings.size(); j++) {
                 if (recordings.get(j).getFileLocation() != null) {
-                    // Audio data is padded with frameLength / 2 on each side to center the frame
                     float[] unpaddedData = AudioProcessor.getWavAudioData(recordings.get(j).getFileLocation());
-                    float[] paddedData = new float[unpaddedData.length + frameLength];
+                    float[] trimmedData = new float[unpaddedData.length - trimFrames];
+                    for (int k = 0; k < trimmedData.length; k++) {
+                        trimmedData[k] = unpaddedData[k + trimFrames];
+                    }
+
+                    // Audio data is padded with frameLength / 2 on each side to center the frame
+                    float[] paddedData = new float[trimmedData.length + frameLength];
                     for (int k = 0; k < padSize; k++) {
-                        paddedData[k] = unpaddedData[padSize + 1 - k];
+                        paddedData[k] = trimmedData[padSize + 1 - k];
                     }
-                    for (int k = frameLength / 2; k < unpaddedData.length + padSize; k++) {
-                        paddedData[k] = unpaddedData[k - padSize];
+                    for (int k = frameLength / 2; k < trimmedData.length + padSize; k++) {
+                        paddedData[k] = trimmedData[k - padSize];
                     }
                     for (int k = 0; k < padSize; k++) {
-                        paddedData[unpaddedData.length + padSize + k] = unpaddedData[unpaddedData.length - 1 - k];
+                        paddedData[trimmedData.length + padSize + k] = trimmedData[trimmedData.length - 1 - k];
                     }
-                    audioData.add(paddedData);
+
+                    audioData.add(applyPreemphasis(paddedData, 0.99f));
                 }
             }
 
@@ -397,7 +481,8 @@ public class WordSelectionActivity extends AppCompatActivity {
             for (int i = 0; i < correctMfccs.size(); i++) {
                 for (int j = 0; j < correctMfccs.size(); j++) {
                     if (i != j) {
-                        LibrosaStyleDTW dtw = new LibrosaStyleDTW(ignoreFirstMfcc(correctMfccs.get(i)), ignoreFirstMfcc(correctMfccs.get(j)));
+                        LibrosaStyleDTW dtw = new LibrosaStyleDTW(correctMfccs.get(i), correctMfccs.get(j));
+//                        LibrosaStyleDTW dtw = new LibrosaStyleDTW(ignoreFirstMfcc(correctMfccs.get(i)), ignoreFirstMfcc(correctMfccs.get(j)));
                         correctScores[idx] = dtw.computeRMSE();
                         idx++;
                     }
@@ -411,12 +496,86 @@ public class WordSelectionActivity extends AppCompatActivity {
             int idx = 0;
             for (int i = 0; i < correctMfccs.size(); i++) {
                 for (int j = 0; j < incorrectMfccs.size(); j++) {
-                    LibrosaStyleDTW dtw = new LibrosaStyleDTW(ignoreFirstMfcc(correctMfccs.get(i)), ignoreFirstMfcc(incorrectMfccs.get(j)));
+                    LibrosaStyleDTW dtw = new LibrosaStyleDTW(correctMfccs.get(i), incorrectMfccs.get(j));
+//                    LibrosaStyleDTW dtw = new LibrosaStyleDTW(ignoreFirstMfcc(correctMfccs.get(i)), ignoreFirstMfcc(incorrectMfccs.get(j)));
                     incorrectScores[idx] = dtw.computeRMSE();
                     idx++;
                 }
             }
             return incorrectScores;
+        }
+
+        private double[][] trimMfccOnEnergy(double[][] mfcc) {
+//            System.out.println(Integer.toString(mfcc.length) + " " + Integer.toString(mfcc[0].length));
+
+            DescriptiveStatistics stats = new DescriptiveStatistics();
+            for (int i = 0; i < mfcc.length; i++) {
+                stats.addValue(mfcc[i][0]);
+            }
+
+            double thirdQuartile = stats.getPercentile(75);
+            int successiveFramesOver = 3;
+            int framesBeforeAfter = 1;
+
+            // Get first crossing index
+            int firstIdx = -1;
+            int framesOver = 0;
+            for (int i = 0; i < mfcc.length; i++) {
+                if (mfcc[i][0] > thirdQuartile) {
+                    if (framesOver == successiveFramesOver)
+                        break;
+                    else if (firstIdx == -1) {
+                        firstIdx = i;
+                        framesOver++;
+                    } else
+                        framesOver++;
+                } else {
+                    framesOver = 0;
+                    firstIdx = -1;
+                }
+            }
+
+            // Make sure first index is far enough in
+            if (firstIdx == -1)
+                firstIdx = framesBeforeAfter;
+            if (firstIdx - framesBeforeAfter < 0)
+                firstIdx = framesBeforeAfter;
+
+            // Get last crossing index
+            int lastIdx = -1;
+            framesOver = 0;
+            for (int i = mfcc.length - 1; i >= 0; i--) {
+                if (mfcc[i][0] > thirdQuartile) {
+                    if (framesOver == successiveFramesOver)
+                        break;
+                    else if (lastIdx == -1) {
+                        lastIdx = i;
+                        framesOver++;
+                    } else
+                        framesOver++;
+                } else {
+                    framesOver = 0;
+                    lastIdx = -1;
+                }
+            }
+
+            // Make sure last index is far enough from end
+            if (lastIdx == -1)
+                lastIdx = mfcc.length - framesBeforeAfter - 1;
+            if (lastIdx + framesBeforeAfter > mfcc.length)
+                lastIdx = mfcc.length - framesBeforeAfter - 1;
+
+            // Trim the mfcc
+            double[][] newMfcc = new double[lastIdx - firstIdx + 2*framesBeforeAfter][mfcc[0].length];
+            for (int i = firstIdx - framesBeforeAfter; i < lastIdx + framesBeforeAfter; i++) {
+                for (int j = 0; j < mfcc[0].length; j++) {
+                    newMfcc[i - firstIdx + framesBeforeAfter][j] = mfcc[i][j];
+                }
+            }
+
+//            System.out.println(Integer.toString(newMfcc.length) + " " + Integer.toString(newMfcc[0].length));
+
+            return newMfcc;
         }
 
         private double[][] ignoreFirstMfcc(double[][] mfcc) {

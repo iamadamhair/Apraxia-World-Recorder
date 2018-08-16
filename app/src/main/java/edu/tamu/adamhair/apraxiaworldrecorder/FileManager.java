@@ -15,6 +15,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.tamu.adamhair.apraxiaworldrecorder.database.Recording;
@@ -44,7 +45,14 @@ public class FileManager {
                         rep1_mfcc.dat
                         ...
                 Game Recordings
-                    TBD
+                    wordName
+                        timestamp.wav
+                        ...
+                Probe
+                    Date
+                        labels.txt
+                        word_1.wav
+                        ...
     */
 
     public static boolean awFolderExists() {
@@ -95,6 +103,56 @@ public class FileManager {
     public static void createWordFolder(String username, String word) {
         File wordFolder = new File(getUserFolderString(username), "Calibration/" +  word);
         wordFolder.mkdir();
+    }
+
+    public static boolean probeDateFolderExists(String username, String dateString) {
+        return new File(getProbeFolder(username), "dateString").isDirectory();
+    }
+
+    public static void createProbeDateFolder(String username, String dateString) {
+        new File(getProbeFolder(username), "dateString").mkdir();
+    }
+
+    public static void createProbeFolder(String username) {
+        getProbeFolder(username).mkdir();
+    }
+
+    public static boolean probeFolderExists(String username) {
+        return getProbeFolder(username).isDirectory();
+    }
+
+    public static File getProbeFolder(String username) {
+        return new File(getUserFolderString(username), "Probe");
+    }
+
+    public static void clearCalibrationAudio(String username) {
+        /*
+        Not sure why I wanted this function.
+        DONT USE UNTIL I REMEMBER, IT DELETES THE WHOLE CALIBRATION FOLDER
+         */
+
+        List<File> wordFolders = new ArrayList<>();
+        File calibration = new File(getUserFolderString(username), "Calibration");
+        File[] calibrationFiles = calibration.listFiles();
+
+        // Save word folder names
+        for (int i = 0; i < calibrationFiles.length; i++) {
+            if (calibrationFiles[i].isDirectory())
+                wordFolders.add(calibrationFiles[i]);
+        }
+        //deleteRecursively(calibration);
+
+        // Recreate word folders
+        for (int i = 0; i < wordFolders.size(); i++) {
+            wordFolders.get(i).mkdir();
+        }
+    }
+
+    private static void deleteRecursively(File fileOrDirectory) {
+        if (fileOrDirectory.isDirectory())
+            for (File child : fileOrDirectory.listFiles())
+                deleteRecursively(child);
+        fileOrDirectory.delete();
     }
 
     public static void recreateUserDatFile(List<String> usernames, Context context) {
