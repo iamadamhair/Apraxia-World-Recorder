@@ -14,7 +14,7 @@ import java.util.concurrent.Executors;
 
 import edu.tamu.adamhair.apraxiaworldrecorder.R;
 
-@Database(entities = {User.class, Recording.class, Repetition.class, Word.class}, version = 1)
+@Database(entities = {User.class, Recording.class, Repetition.class, Word.class, Probe.class}, version = 1)
 public abstract class AppDatabase extends RoomDatabase {
 
     private static AppDatabase INSTANCE;

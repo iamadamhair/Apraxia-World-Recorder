@@ -53,6 +53,10 @@ public class RepetitionViewModel extends AndroidViewModel {
         return appDatabase.repetitionDao().findRepetitionsToExport(userId);
     }
 
+    public List<Repetition> getRepetitionListMarkedForExport(int userId) {
+        return appDatabase.repetitionDao().findRepetitionListToExport(userId);
+    }
+
     public List<Repetition> getRepetitionListByUserIdAndWordIdsSorted(int userId, List<Integer> wordIds) {
         return appDatabase.repetitionDao().findListByUserIdAndWordIdSorted(userId, wordIds);
     }

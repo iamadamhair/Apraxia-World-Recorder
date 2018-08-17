@@ -25,6 +25,12 @@ public interface ProbeDao {
     @Query("SELECT * FROM probe WHERE user_id LIKE :userId GROUP BY probe_number")
     LiveData<List<Probe>> getUniqueProbesForUser(int userId);
 
+    @Query("SELECT MAX(probe_number) FROM probe WHERE user_id LIKE :userId")
+    int getMaxProbeNumForUser(int userId);
+
+    @Query("SELECT COUNT(*) FROM (SELECT DISTINCT probe_number FROM probe WHERE user_id LIKE :userId)")
+    int getProbeCountForUser(int userId);
+
     @Insert
     void insertAll(Probe... probes);
 

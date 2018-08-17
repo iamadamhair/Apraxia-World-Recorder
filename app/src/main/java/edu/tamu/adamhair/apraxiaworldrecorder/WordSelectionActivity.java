@@ -247,7 +247,11 @@ public class WordSelectionActivity extends AppCompatActivity {
 
                 } else if (menuItem.getItemId() == R.id.probe) {
 
-                    launchProbeSelectionActivity();
+                    if (wordsCompleted < 10) {
+                        Toast.makeText(WordSelectionActivity.this, "You need to record " + String.valueOf(10 - wordsCompleted) + " more word sets before probing", Toast.LENGTH_SHORT).show();
+                    } else {
+                        launchProbeSelectionActivity();
+                    }
 
                 } else if (menuItem.getItemId() == R.id.uploadToCloud) {
 
@@ -311,7 +315,6 @@ public class WordSelectionActivity extends AppCompatActivity {
                 this.substring = ".";
             }
             List<Integer> wordIds = wordViewModel.getWordIdsContainingSubstring(this.substring);
-            Log.i("Word Ids", wordIds.toString());
             this.repetitionMatches = repetitionViewModel.getRepetitionListByUserIdAndWordIdsSorted(this.userId, wordIds);
             return null;
         }
