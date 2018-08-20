@@ -51,7 +51,8 @@
     <FrameLayout
         android:id="@+id/probeFrameLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:clickable="true">
 
         <ImageView
             android:layout_width="match_parent"
@@ -212,6 +213,69 @@
         </RelativeLayout>
 
 
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/probeUploadFrameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#111111"
+            android:alpha="0.4"/>
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
+            <ProgressBar
+                android:id="@+id/probeUploadProgressBar"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminate="true"
+                android:layout_centerHorizontal="true"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:layout_below="@id/probeUploadProgressBar"
+                android:text="Uploading probe..."
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"/>
+        </RelativeLayout>
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/probeUploadConfirmFrameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#111111"
+            android:alpha="0.4"/>
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
+            <ImageView
+                android:id="@+id/probeLargeCheckmark"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:src="@drawable/large_checkmark"
+                android:layout_centerHorizontal="true"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:layout_below="@id/largeCheckmark"
+                android:text="Probe successfully uploaded"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"/>
+        </RelativeLayout>
     </FrameLayout>
 
 </android.support.constraint.ConstraintLayout>

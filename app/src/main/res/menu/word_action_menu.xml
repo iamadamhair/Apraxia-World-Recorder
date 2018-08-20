@@ -10,7 +10,7 @@
 
     <item
         android:id="@+id/uploadToCloud"
-        android:title="Upload to Server"/>
+        android:title="Upload all User Audio"/>
 
     <item
         android:id="@+id/exportToGame"

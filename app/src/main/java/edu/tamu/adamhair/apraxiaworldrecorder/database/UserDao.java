@@ -18,6 +18,9 @@ public interface UserDao {
     @Query("SELECT * FROM user")
     LiveData<List<User>> getAll();
 
+    @Query("SELECT * FROM user")
+    List<User> getAllList();
+
     @Query("SELECT * FROM user ORDER BY username ASC")
     LiveData<List<User>> getAllSorted();
 
@@ -29,6 +32,9 @@ public interface UserDao {
 
     @Query("SELECT username FROM user ORDER BY username ASC")
     LiveData<List<String>> getAllUsernamesSorted();
+
+    @Query("SELECT uid FROM user ORDER BY username ASC")
+    List<Integer> getAllUserIds();
 
     @Insert
     void insertAll(User... users);

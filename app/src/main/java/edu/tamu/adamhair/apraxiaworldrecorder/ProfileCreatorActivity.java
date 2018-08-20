@@ -146,7 +146,7 @@ public class ProfileCreatorActivity extends AppCompatActivity {
     private void newUserSetup(User user, Intent intent) {
         // Puts the user in the db and populates the repetitions
         usernames.add(user.getUsername());
-        new writeUserDatAsync(this).execute(usernames);
+        //new writeUserDatAsync(this).execute(usernames);
         repetitionViewModel.populateRepetitions(this.getResources().getStringArray(R.array.ndp3_images),
                 user, intent, getApplication());
 //        userViewModel.addUser(user);
@@ -185,7 +185,6 @@ public class ProfileCreatorActivity extends AppCompatActivity {
         }
     }
 
-
     private boolean areFieldsFilledIn() {
         if (usernameEditText.getText().toString().length() > 0 && ageEditText.getText().toString().length() > 0) {
             return true;
@@ -193,6 +192,7 @@ public class ProfileCreatorActivity extends AppCompatActivity {
             return false;
         }
     }
+
     private class writeUserDatAsync extends AsyncTask<List<String>, Void, Void> {
         Context mContext;
 

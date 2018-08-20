@@ -48,14 +48,19 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import edu.tamu.adamhair.apraxiaworldrecorder.asynctasks.ExportAudioAsyncTask;
+import edu.tamu.adamhair.apraxiaworldrecorder.asynctasks.WordSearchAsyncTask;
+import edu.tamu.adamhair.apraxiaworldrecorder.asynctasks.ZipAsyncTask;
 import edu.tamu.adamhair.apraxiaworldrecorder.audio.AudioProcessor;
 import edu.tamu.adamhair.apraxiaworldrecorder.audio.LibrosaStyleDTW;
 import edu.tamu.adamhair.apraxiaworldrecorder.audio.MFCC;
 import edu.tamu.adamhair.apraxiaworldrecorder.database.Recording;
 import edu.tamu.adamhair.apraxiaworldrecorder.database.Repetition;
+import edu.tamu.adamhair.apraxiaworldrecorder.database.User;
 import edu.tamu.adamhair.apraxiaworldrecorder.database.Word;
 import edu.tamu.adamhair.apraxiaworldrecorder.viewmodels.RecordingViewModel;
 import edu.tamu.adamhair.apraxiaworldrecorder.viewmodels.RepetitionViewModel;
+import edu.tamu.adamhair.apraxiaworldrecorder.viewmodels.UserViewModel;
 import edu.tamu.adamhair.apraxiaworldrecorder.viewmodels.WordViewModel;
 
 public class WordSelectionActivity extends AppCompatActivity {
@@ -63,6 +68,7 @@ public class WordSelectionActivity extends AppCompatActivity {
     RepetitionViewModel repetitionViewModel;
     RecordingViewModel recordingViewModel;
     WordViewModel wordViewModel;
+    UserViewModel userViewModel;
     int userId;
     String username;
     int wordsCompleted;
@@ -120,6 +126,7 @@ public class WordSelectionActivity extends AppCompatActivity {
         repetitionViewModel =  ViewModelProviders.of(this).get(RepetitionViewModel.class);
         recordingViewModel = ViewModelProviders.of(this).get(RecordingViewModel.class);
         wordViewModel = ViewModelProviders.of(this).get(WordViewModel.class);
+        userViewModel = ViewModelProviders.of(this).get(UserViewModel.class);
 
         // getRepetitionsByUserIdSorted
         repetitionViewModel.getRepetitionsMarkedForExport(userId).observe(WordSelectionActivity.this, new Observer<List<Repetition>>() {
@@ -147,17 +154,6 @@ public class WordSelectionActivity extends AppCompatActivity {
         }
 
         /* Set up onClickListeners */
-        gameExportImageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (wordsCompleted < 10) {
-                    Toast.makeText(WordSelectionActivity.this, "You need to select " + String.valueOf(10-wordsCompleted) + " more word sets", Toast.LENGTH_SHORT).show();
-                } else {
-                    new exportAudioAsyncTask(WordSelectionActivity.this, exportFrameLayout, confirmationFrameLayout, userId,
-                            username, repetitionList, recordingViewModel, wordViewModel).execute();
-                }
-            }
-        });
         wordSearchEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
@@ -166,26 +162,12 @@ public class WordSelectionActivity extends AppCompatActivity {
                 }
             }
         });
+
         wordList.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 hideKeyboard(wordSearchEditText);
                 return false;
-            }
-        });
-
-        cloudUploadImagebutton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (wordsCompleted < 10) {
-                    Toast.makeText(WordSelectionActivity.this, "You need to record " + String.valueOf(10-wordsCompleted) + " more word sets", Toast.LENGTH_SHORT).show();
-                } else {
-                    String params[] = new String[2];
-                    params[0] = FileManager.getUserFolderString(username);
-                    params[1] = Environment.getExternalStorageDirectory().toString() + "/" + username + ".zip";
-                    new zipAsyncTask(WordSelectionActivity.this, storageReference,
-                            recordingViewModel, wordViewModel, userId, username, uploadFrameLayout, confirmationFrameLayout).execute(params);
-                }
             }
         });
 
@@ -203,7 +185,7 @@ public class WordSelectionActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable editable) {
                 String substring = editable.toString();
-                new wordSearchAsyncTask(wordListAdapter, repetitionViewModel, wordViewModel, substring, userId).execute();
+                new WordSearchAsyncTask(wordListAdapter, repetitionViewModel, wordViewModel, substring, userId).execute();
             }
         });
     }
@@ -211,7 +193,7 @@ public class WordSelectionActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        new wordSearchAsyncTask(wordListAdapter, repetitionViewModel, wordViewModel,
+        new WordSearchAsyncTask(wordListAdapter, repetitionViewModel, wordViewModel,
                 wordSearchEditText.getText().toString(), userId).execute();
 
     }
@@ -262,8 +244,9 @@ public class WordSelectionActivity extends AppCompatActivity {
                         String params[] = new String[2];
                         params[0] = FileManager.getUserFolderString(username);
                         params[1] = Environment.getExternalStorageDirectory().toString() + "/" + username + ".zip";
-                        new zipAsyncTask(WordSelectionActivity.this, storageReference,
-                                recordingViewModel, wordViewModel, userId, username, uploadFrameLayout, confirmationFrameLayout).execute(params);
+                        new ZipAsyncTask(WordSelectionActivity.this, storageReference,
+                                recordingViewModel, wordViewModel, userId, username, uploadFrameLayout,
+                                confirmationFrameLayout, false).execute(params);
                     }
 
                 } else if (menuItem.getItemId() == R.id.exportToGame) {
@@ -272,7 +255,8 @@ public class WordSelectionActivity extends AppCompatActivity {
                     if (wordsCompleted < 10) {
                         Toast.makeText(WordSelectionActivity.this, "You need to select " + String.valueOf(10-wordsCompleted) + " more word sets", Toast.LENGTH_SHORT).show();
                     } else {
-                        new exportAudioAsyncTask(WordSelectionActivity.this, exportFrameLayout, confirmationFrameLayout, userId,
+                        userViewModel.writeUsernamesMarkedForExport(WordSelectionActivity.this);
+                        new ExportAudioAsyncTask(WordSelectionActivity.this, exportFrameLayout, confirmationFrameLayout, userId,
                                 username, repetitionList, recordingViewModel, wordViewModel).execute();
                     }
 
@@ -291,466 +275,4 @@ public class WordSelectionActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private static class wordSearchAsyncTask extends AsyncTask<Void, Void, Void> {
-        private WordListAdapter wordListAdapter;
-        private RepetitionViewModel repetitionViewModel;
-        private WordViewModel wordViewModel;
-        private String substring;
-        private int userId;
-        private List<Repetition> repetitionMatches;
-
-        wordSearchAsyncTask(WordListAdapter wordListAdapter, RepetitionViewModel repetitionViewModel,
-                            WordViewModel wordViewModel, String substring, int userId) {
-            this.wordListAdapter = wordListAdapter;
-            this.repetitionViewModel = repetitionViewModel;
-            this.substring = substring;
-            this.wordViewModel = wordViewModel;
-            this.userId = userId;
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            if (this.substring.isEmpty()) {
-                // Replace it with anything so that the database doesn't return all the words
-                this.substring = ".";
-            }
-            List<Integer> wordIds = wordViewModel.getWordIdsContainingSubstring(this.substring);
-            this.repetitionMatches = repetitionViewModel.getRepetitionListByUserIdAndWordIdsSorted(this.userId, wordIds);
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            this.wordListAdapter.addItems(this.repetitionMatches);
-        }
-    }
-
-    private static class exportAudioAsyncTask extends AsyncTask<Void, Void, Void> {
-        private Context context;
-        private FrameLayout exportOverlay;
-        private FrameLayout confirmationOverlay;
-        private int userId;
-        private String username;
-        private List<Repetition> repetitionList;
-        private RecordingViewModel recordingViewModel;
-        private WordViewModel wordViewModel;
-
-        exportAudioAsyncTask(Context context, FrameLayout exportOverlay, FrameLayout confirmationOverlay, int userId, String username,
-                             List<Repetition> repetitionList, RecordingViewModel recordingViewModel, WordViewModel wordViewModel) {
-            this.context = context;
-            this.exportOverlay = exportOverlay;
-            this.confirmationOverlay = confirmationOverlay;
-            this.userId = userId;
-            this.username = username;
-            this.repetitionList = repetitionList;
-            this.recordingViewModel = recordingViewModel;
-            this.wordViewModel = wordViewModel;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            AlphaAnimation inAnimation = new AlphaAnimation(0f, 1f);
-            inAnimation.setDuration(200);
-            this.exportOverlay.setAnimation(inAnimation);
-            this.exportOverlay.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            int fs = 16000;
-            int frameLength = 512;
-            int frameOverlap = 512 - 128;
-            int padSize = frameLength / 2;
-
-            //FileManager.clearCalibrationAudio(username);
-
-            List<Recording> allRecordings = new ArrayList<>();
-
-            for (int i = 0; i < repetitionList.size(); i++) {
-                // Make sure this is a complete word set
-                if (repetitionList.get(i).getNumCorrect() > 4 && repetitionList.get(i).getNumIncorrect() > 4) {
-                    int wordId = repetitionList.get(i).getWordId();
-                    List<Recording> recordings = recordingViewModel.getRecordingArrayListOfUserAndWord(userId, wordId);
-                    allRecordings.addAll(recordings);
-
-                    /* Get all MFCCS */
-                    List<float[]> audioData = getAudioData(recordings, frameLength, padSize);
-
-                    AudioProcessor audioProcessor = new AudioProcessor(fs, frameLength, frameOverlap);
-
-                    List<double[][]> correctMfccs = new ArrayList<>();
-                    List<double[][]> incorrectMfccs = new ArrayList<>();
-                    for (int j = 0; j < audioData.size(); j++) {
-                        audioProcessor.setAudioData(audioData.get(j));
-                        if (recordings.get(j).isCorrect()) {
-                            correctMfccs.add(MFCC.applyMeanCepstralNormalization(trimMfccOnEnergy(audioProcessor.computeMfccs(13))));
-                        } else {
-                            incorrectMfccs.add(MFCC.applyMeanCepstralNormalization(trimMfccOnEnergy(audioProcessor.computeMfccs(13))));
-                        }
-                    }
-
-                    /* Get all distances */
-                    double[] correctDistances = getCorrectDistances(correctMfccs);
-                    double[] incorrectDistances = getIncorrectDistances(correctMfccs, incorrectMfccs);
-
-                    /* Write the data to disk */
-                    FileManager.recreateDistanceDatFile(correctDistances, incorrectDistances, username, repetitionList.get(i).getWordName(), context);
-                    int noCorrect = 0;
-                    int noIncorrect = 0;
-                    for (int j = 0; j < recordings.size(); j++) {
-                        if (recordings.get(j).isCorrect()) {
-                            FileManager.recreateMfccFile(correctMfccs.get(noCorrect), username,
-                                    repetitionList.get(i).getWordName(), recordings.get(j).getRepetitionNumber(), context);
-                            noCorrect++;
-                        } else {
-                            FileManager.recreateMfccFile(incorrectMfccs.get(noIncorrect), username,
-                                    repetitionList.get(i).getWordName(), recordings.get(j).getRepetitionNumber(), context);
-                            noIncorrect++;
-                        }
-                    }
-                }
-            }
-
-            /* Write to file */
-            FileManager.recreateRepetitionDatFile(allRecordings, username, context);
-            FileManager.recreateWordsDatFile(wordViewModel.getAllWords(), username, context);
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            this.exportOverlay.setVisibility(View.GONE);
-            this.confirmationOverlay.setVisibility(View.VISIBLE);
-
-            final Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    AlphaAnimation outAnimation = new AlphaAnimation(1f, 0f);
-                    outAnimation.setDuration(200);
-                    confirmationOverlay.setAnimation(outAnimation);
-                    confirmationOverlay.setVisibility(View.GONE);
-                }
-            }, 2500);
-        }
-
-        private float[] applyPreemphasis(float[] audioData, float alpha) {
-            float[] filteredAudio = new float[audioData.length];
-            filteredAudio[0] = audioData[0];
-            for (int i = 1; i < audioData.length; i++){
-                filteredAudio[i] = audioData[i] - alpha*audioData[i-1];
-            }
-            return filteredAudio;
-        }
-
-        private List<float[]> getAudioData(List<Recording> recordings, int frameLength, int padSize) {
-            int trimFrames = 2048;
-
-            List<float[]> audioData = new ArrayList<>();
-            for (int j = 0; j < recordings.size(); j++) {
-                if (recordings.get(j).getFileLocation() != null) {
-                    float[] unpaddedData = AudioProcessor.getWavAudioData(recordings.get(j).getFileLocation());
-                    float[] trimmedData = new float[unpaddedData.length - trimFrames];
-                    for (int k = 0; k < trimmedData.length; k++) {
-                        trimmedData[k] = unpaddedData[k + trimFrames];
-                    }
-
-                    // Audio data is padded with frameLength / 2 on each side to center the frame
-                    float[] paddedData = new float[trimmedData.length + frameLength];
-                    for (int k = 0; k < padSize; k++) {
-                        paddedData[k] = trimmedData[padSize + 1 - k];
-                    }
-                    for (int k = frameLength / 2; k < trimmedData.length + padSize; k++) {
-                        paddedData[k] = trimmedData[k - padSize];
-                    }
-                    for (int k = 0; k < padSize; k++) {
-                        paddedData[trimmedData.length + padSize + k] = trimmedData[trimmedData.length - 1 - k];
-                    }
-
-                    audioData.add(applyPreemphasis(paddedData, 0.99f));
-                }
-            }
-
-            return audioData;
-        }
-
-        private double[] getCorrectDistances(List<double[][]> correctMfccs) {
-            double[] correctScores = new double[correctMfccs.size() * (correctMfccs.size()-1)];
-            // This will have duplicate scores because we compare i to j, then later j to i
-            int idx = 0;
-            for (int i = 0; i < correctMfccs.size(); i++) {
-                for (int j = 0; j < correctMfccs.size(); j++) {
-                    if (i != j) {
-                        LibrosaStyleDTW dtw = new LibrosaStyleDTW(correctMfccs.get(i), correctMfccs.get(j));
-//                        LibrosaStyleDTW dtw = new LibrosaStyleDTW(ignoreFirstMfcc(correctMfccs.get(i)), ignoreFirstMfcc(correctMfccs.get(j)));
-                        correctScores[idx] = dtw.computeRMSE();
-                        idx++;
-                    }
-                }
-            }
-            return correctScores;
-        }
-
-        private double[] getIncorrectDistances(List<double[][]> correctMfccs, List<double[][]> incorrectMfccs) {
-            double[] incorrectScores = new double[incorrectMfccs.size() * correctMfccs.size()];
-            int idx = 0;
-            for (int i = 0; i < correctMfccs.size(); i++) {
-                for (int j = 0; j < incorrectMfccs.size(); j++) {
-                    LibrosaStyleDTW dtw = new LibrosaStyleDTW(correctMfccs.get(i), incorrectMfccs.get(j));
-//                    LibrosaStyleDTW dtw = new LibrosaStyleDTW(ignoreFirstMfcc(correctMfccs.get(i)), ignoreFirstMfcc(incorrectMfccs.get(j)));
-                    incorrectScores[idx] = dtw.computeRMSE();
-                    idx++;
-                }
-            }
-            return incorrectScores;
-        }
-
-        private double[][] trimMfccOnEnergy(double[][] mfcc) {
-//            System.out.println(Integer.toString(mfcc.length) + " " + Integer.toString(mfcc[0].length));
-
-            DescriptiveStatistics stats = new DescriptiveStatistics();
-            for (int i = 0; i < mfcc.length; i++) {
-                stats.addValue(mfcc[i][0]);
-            }
-
-            double thirdQuartile = stats.getPercentile(75);
-            int successiveFramesOver = 3;
-            int framesBeforeAfter = 1;
-
-            // Get first crossing index
-            int firstIdx = -1;
-            int framesOver = 0;
-            for (int i = 0; i < mfcc.length; i++) {
-                if (mfcc[i][0] > thirdQuartile) {
-                    if (framesOver == successiveFramesOver)
-                        break;
-                    else if (firstIdx == -1) {
-                        firstIdx = i;
-                        framesOver++;
-                    } else
-                        framesOver++;
-                } else {
-                    framesOver = 0;
-                    firstIdx = -1;
-                }
-            }
-
-            // Make sure first index is far enough in
-            if (firstIdx == -1)
-                firstIdx = framesBeforeAfter;
-            if (firstIdx - framesBeforeAfter < 0)
-                firstIdx = framesBeforeAfter;
-
-            // Get last crossing index
-            int lastIdx = -1;
-            framesOver = 0;
-            for (int i = mfcc.length - 1; i >= 0; i--) {
-                if (mfcc[i][0] > thirdQuartile) {
-                    if (framesOver == successiveFramesOver)
-                        break;
-                    else if (lastIdx == -1) {
-                        lastIdx = i;
-                        framesOver++;
-                    } else
-                        framesOver++;
-                } else {
-                    framesOver = 0;
-                    lastIdx = -1;
-                }
-            }
-
-            // Make sure last index is far enough from end
-            if (lastIdx == -1)
-                lastIdx = mfcc.length - framesBeforeAfter - 1;
-            if (lastIdx + framesBeforeAfter > mfcc.length)
-                lastIdx = mfcc.length - framesBeforeAfter - 1;
-
-            // Trim the mfcc
-            double[][] newMfcc = new double[lastIdx - firstIdx + 2*framesBeforeAfter][mfcc[0].length];
-            for (int i = firstIdx - framesBeforeAfter; i < lastIdx + framesBeforeAfter; i++) {
-                for (int j = 0; j < mfcc[0].length; j++) {
-                    newMfcc[i - firstIdx + framesBeforeAfter][j] = mfcc[i][j];
-                }
-            }
-
-//            System.out.println(Integer.toString(newMfcc.length) + " " + Integer.toString(newMfcc[0].length));
-
-            return newMfcc;
-        }
-
-        private double[][] ignoreFirstMfcc(double[][] mfcc) {
-            double[][] newMfcc = new double[mfcc.length][mfcc[0].length-1];
-            for (int i = 0; i < mfcc.length; i++) {
-                for (int j = 0; j < mfcc[0].length-1; j++) {
-                    newMfcc[i][j] = mfcc[i][j+1];
-                }
-            }
-            return newMfcc;
-        }
-
-    }
-
-    private static class zipAsyncTask extends AsyncTask<String, Void, Void> {
-        /*
-        Zip function taken from SO answer:
-        https://stackoverflow.com/questions/6683600/zip-compress-a-folder-full-of-files-on-android
-         */
-        final int BUFFER = 2048;
-        private Context mContext;
-        private String destinationPath;
-        private StorageReference storageReference;
-        private RecordingViewModel recordingViewModel;
-        private WordViewModel wordViewModel;
-        private int userId;
-        private String username;
-        private FrameLayout overlay;
-        private FrameLayout confirmationOverlay;
-
-        zipAsyncTask(Context context, StorageReference reference, RecordingViewModel recordingViewModel,
-                     WordViewModel wordViewModel, int userId, String username, FrameLayout overlay, FrameLayout confirmationOverlay) {
-            mContext = context;
-            storageReference = reference;
-            this.recordingViewModel = recordingViewModel;
-            this.userId = userId;
-            this.username = username;
-            this.wordViewModel = wordViewModel;
-            this.overlay = overlay;
-            this.confirmationOverlay = confirmationOverlay;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            AlphaAnimation inAnimation = new AlphaAnimation(0f, 1f);
-            inAnimation.setDuration(200);
-            overlay.setAnimation(inAnimation);
-            overlay.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected Void doInBackground(final String... params) {
-            // Get Repetitions to write label file
-            List<Recording> recordings = recordingViewModel.getRecordingsListByUserId(userId);
-            List<Word> words = wordViewModel.getAllWords();
-
-            FileManager.recreateRepetitionDatFile(recordings, username, mContext);
-            FileManager.recreateWordsDatFile(words, username, mContext);
-
-            // Param 0 is source, param 1 is destination
-            destinationPath = params[1];
-            zipFileAtPath(params[0], params[1]);
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-
-            Log.d("Zipper", "Files zipped and attempting to upload");
-            // Upload zip to Firebase upon zip completion
-            Uri file = Uri.fromFile(new File(destinationPath));
-            StorageReference zipRef = storageReference.child(username + String.valueOf(System.currentTimeMillis() / 1000) + ".zip");
-
-            zipRef.putFile(file)
-                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            Log.d("Firebase", "File uploaded");
-                            overlay.setVisibility(View.GONE);
-                            confirmationOverlay.setVisibility(View.VISIBLE);
-
-                            final Handler handler = new Handler();
-                            handler.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    AlphaAnimation outAnimation = new AlphaAnimation(1f, 0f);
-                                    outAnimation.setDuration(200);
-                                    confirmationOverlay.setAnimation(outAnimation);
-                                    confirmationOverlay.setVisibility(View.GONE);
-                                }
-                            }, 2500);
-
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.e("Firebase", "File not uploaded");
-                            overlay.setVisibility(View.GONE);
-                            Toast.makeText(mContext, "Files not able to upload!", Toast.LENGTH_LONG).show();
-                        }
-                    });
-        }
-
-        private boolean zipFileAtPath(String sourcePath, String destinationPath) {
-            File sourceFile = new File(sourcePath);
-
-            try {
-                BufferedInputStream origin = null;
-                FileOutputStream destination = new FileOutputStream(destinationPath);
-                ZipOutputStream outputZip = new ZipOutputStream(new BufferedOutputStream(destination));
-
-                if (sourceFile.isDirectory()) {
-                    zipSubFolder(outputZip, sourceFile, sourceFile.getParent().length()+1);
-                } else {
-                    byte data[] = new byte[BUFFER];
-                    FileInputStream fi = new FileInputStream(sourcePath);
-                    origin = new BufferedInputStream(fi, BUFFER);
-
-                    ZipEntry entry = new ZipEntry(getLastPathComponent(sourcePath.substring(sourcePath.lastIndexOf("/"))));
-                    outputZip.putNextEntry(entry);
-
-                    int count;
-                    while ((count = origin.read(data, 0, BUFFER)) != -1 ) {
-                        outputZip.write(data, 0, count);
-                    }
-                }
-                outputZip.close();
-                MediaScannerConnection.scanFile(mContext, new String[] {destinationPath}, null, null);
-
-            } catch (Exception e) {
-                e.printStackTrace();;
-                return false;
-            }
-            return true;
-        }
-
-        private void zipSubFolder(ZipOutputStream out, File folder, int basePathLength) throws IOException {
-
-            final int BUFFER = 2048;
-
-            File[] fileList = folder.listFiles();
-            BufferedInputStream origin = null;
-            for (File file : fileList) {
-                if (file.isDirectory()) {
-                    zipSubFolder(out, file, basePathLength);
-                } else {
-                    byte data[] = new byte[BUFFER];
-                    String unmodifiedFilePath = file.getPath();
-                    String relativePath = unmodifiedFilePath
-                            .substring(basePathLength);
-                    FileInputStream fi = new FileInputStream(unmodifiedFilePath);
-                    origin = new BufferedInputStream(fi, BUFFER);
-                    ZipEntry entry = new ZipEntry(relativePath);
-                    out.putNextEntry(entry);
-                    int count;
-                    while ((count = origin.read(data, 0, BUFFER)) != -1) {
-                        out.write(data, 0, count);
-                    }
-                    origin.close();
-                }
-            }
-        }
-
-        private String getLastPathComponent(String filePath) {
-            String[] segments = filePath.split("/");
-            if (segments.length == 0)
-                return "";
-            String lastPathComponent = segments[segments.length - 1];
-            return lastPathComponent;
-        }
-    }
 }

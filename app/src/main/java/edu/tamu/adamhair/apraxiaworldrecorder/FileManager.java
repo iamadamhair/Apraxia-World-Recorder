@@ -106,11 +106,15 @@ public class FileManager {
     }
 
     public static boolean probeDateFolderExists(String username, String dateString) {
-        return new File(getProbeFolder(username), "dateString").isDirectory();
+        return new File(getProbeFolder(username), dateString).isDirectory();
+    }
+
+    public static File getProbeDateFolder(String username, String dateString) {
+        return new File(getProbeFolder(username), dateString);
     }
 
     public static void createProbeDateFolder(String username, String dateString) {
-        new File(getProbeFolder(username), "dateString").mkdir();
+        getProbeDateFolder(username, dateString).mkdir();
     }
 
     public static void createProbeFolder(String username) {

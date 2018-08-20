@@ -114,8 +114,8 @@ public class ProbeViewModel extends AndroidViewModel{
             dateValues[4] = calendar.get(Calendar.MINUTE);
             dateValues[5] = calendar.get(Calendar.SECOND);
             String dateString = Integer.toString(dateValues[2]) + "-" + Integer.toString(dateValues[1]) + "-" +
-                    Integer.toString(dateValues[0]) + " " + Integer.toString(dateValues[3]) + ":" + Integer.toString(dateValues[4]) +
-                    ":" + Integer.toString(dateValues[5]);
+                    Integer.toString(dateValues[0]) + " " + Integer.toString(dateValues[3]) + "_" + Integer.toString(dateValues[4]) +
+                    "_" + Integer.toString(dateValues[5]);
 
             for (int i = 0; i < newProbes.length; i++) {
                 newProbes[i] = new Probe(probeNum, userId, "", repetitions.get(i).getWordId(), repetitions.get(i).getWordName(), false, dateString);
